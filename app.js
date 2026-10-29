@@ -443,6 +443,7 @@ async function serveStatic(req, res, url) {
   if (p === '/') p = '/index.html';
   const file = path.normalize(path.join(PUBLIC_DIR, p));
   if (!file.startsWith(PUBLIC_DIR + path.sep)) { res.writeHead(404); return res.end(); }
+  if (ON_VERCEL) console.log(`404 확인용: ${req.method} ${req.url} → ${url.pathname}`);
   return serveFile(res, file);
 }
 
@@ -452,6 +453,13 @@ async function handler(req, res) {
   res.setHeader('Referrer-Policy', 'same-origin');
   let url;
   try { url = new URL(req.url, 'http://localhost'); } catch { res.writeHead(400); return res.end(); }
+  // Vercel은 주소를 /api 로 바꿔서 넘겨줄 때가 있음 → vercel.json이 원래 주소를 __path 에 담아 보내므로 그걸 사용
+  const orig = url.searchParams.get('__path');
+  if (orig && /^\/(api|admin)(\/|\.html|$)/.test(orig) && ['/api', '/api/', '/api/index', '/api/index.js'].includes(url.pathname)) {
+    url.searchParams.delete('__path');
+    url = new URL(orig + (url.search || ''), 'http://localhost');
+  }
+  res.setHeader('X-BK-Version', '3');
   try {
     if (url.pathname.startsWith('/api/')) return await api(req, res, url);
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405); return res.end(); }

@@ -5,20 +5,20 @@
   ],
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api"
+      "source": "/api/:path*",
+      "destination": "/api?__path=/api/:path*"
     },
     {
       "source": "/admin",
-      "destination": "/api"
+      "destination": "/api?__path=/admin"
     },
     {
       "source": "/admin/",
-      "destination": "/api"
+      "destination": "/api?__path=/admin"
     },
     {
       "source": "/admin.html",
-      "destination": "/api"
+      "destination": "/api?__path=/admin"
     },
     {
       "source": "/pierce",
