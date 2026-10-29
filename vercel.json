@@ -3,11 +3,6 @@
   "regions": [
     "sin1"
   ],
-  "functions": {
-    "api/index.js": {
-      "includeFiles": "private/**"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -15,6 +10,10 @@
     },
     {
       "source": "/admin",
+      "destination": "/api"
+    },
+    {
+      "source": "/admin/",
       "destination": "/api"
     },
     {

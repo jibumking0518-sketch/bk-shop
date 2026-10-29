@@ -17,7 +17,8 @@ const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 let ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 const DATABASE_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL || '';
 const PUBLIC_DIR = path.join(__dirname, 'public');
-const ADMIN_FILE = path.join(__dirname, 'private', 'admin.html');
+// 관리자 화면은 서버 코드와 함께 묶여 배포되도록 자바스크립트 파일로 불러옴 (Vercel에서 파일을 못 찾는 문제 방지)
+const ADMIN_HTML = require('./private/admin-page.js');
 const SESSION_DAYS = 14;
 const IS_PROD = process.env.NODE_ENV === 'production' || ON_VERCEL;
 // Vercel 같은 클라우드에서는 요청이 프록시를 거쳐 들어오므로, 실제 접속자 IP는 X-Forwarded-For 헤더에 있음
@@ -430,11 +431,11 @@ async function serveFile(res, file) {
   res.end(data);
 }
 async function serveStatic(req, res, url) {
-  if (url.pathname === '/admin' || url.pathname === '/admin.html') {
+  if (url.pathname === '/admin' || url.pathname === '/admin/' || url.pathname === '/admin.html') {
     if (!requireAdmin(req, res)) return;
     res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('Cache-Control', 'no-store');
-    return serveFile(res, ADMIN_FILE);
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+    return res.end(ADMIN_HTML);
   }
   if (url.pathname === '/pierce' || url.pathname === '/buds' || url.pathname === '/buds.html') return serveFile(res, path.join(PUBLIC_DIR, 'pierce.html'));
   let p;
