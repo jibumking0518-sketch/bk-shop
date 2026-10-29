@@ -1,0 +1,52 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "regions": [
+    "sin1"
+  ],
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "private/**"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api"
+    },
+    {
+      "source": "/admin",
+      "destination": "/api"
+    },
+    {
+      "source": "/admin.html",
+      "destination": "/api"
+    },
+    {
+      "source": "/pierce",
+      "destination": "/pierce.html"
+    },
+    {
+      "source": "/buds",
+      "destination": "/pierce.html"
+    },
+    {
+      "source": "/buds.html",
+      "destination": "/pierce.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "same-origin"
+        }
+      ]
+    }
+  ]
+}

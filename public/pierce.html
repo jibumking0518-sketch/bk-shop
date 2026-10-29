@@ -1,0 +1,1229 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BK pierce · BumBum Company</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#ffffff; --bg2:#f5f5f7; --fg:#0b0b0f; --muted:#6e6e73; --line:#e6e6eb;
+    --accent:#2f5bff; --ok:#16a34a; --err:#dc2626;
+    --radius:22px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html.lenis,html.lenis body{height:auto}
+  .lenis.lenis-smooth{scroll-behavior:auto!important}
+  body{background:var(--bg);color:var(--fg);font-family:'Inter','Noto Sans KR',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  button,input{font-family:inherit}
+  a{color:inherit}
+
+  /* 3D 캔버스: 화면 뒤에 고정 */
+  #gl{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+  main{position:relative;z-index:1}
+
+  /* ---------- NAV ---------- */
+  nav{position:fixed;inset:0 0 auto 0;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 5vw;z-index:50;background:rgba(255,255,255,.72);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);border-bottom:1px solid rgba(0,0,0,.06)}
+  .brand{display:flex;align-items:baseline;gap:10px;text-decoration:none}
+  .brand b{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .brand span{font-size:12px;color:var(--muted);letter-spacing:.04em}
+  .nav-links{display:flex;align-items:center;gap:26px}
+  .nav-links a{font-size:14px;color:var(--muted);text-decoration:none;transition:color .2s;cursor:pointer}
+  .nav-links a:hover{color:var(--fg)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;border-radius:999px;font-weight:600;font-size:15px;padding:13px 26px;transition:transform .2s,background .2s,box-shadow .2s;text-decoration:none}
+  .btn:active{transform:scale(.97)}
+  .btn-dark{background:var(--fg);color:#fff}
+  .btn-dark:hover{background:#26262c;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+  .btn-ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+  .btn-ghost:hover{background:var(--bg2)}
+  .btn-sm{padding:8px 16px;font-size:13px}
+  @media (max-width:820px){ .nav-links a.hide-m{display:none} .brand span{display:none} }
+
+  /* ---------- 공통 스티키 섹션 ---------- */
+  .sticky-sec{position:relative}
+  .sticky{position:sticky;top:0;height:100vh;display:flex;align-items:center;padding:0 7vw}
+  .sticky.right{justify-content:flex-end}
+
+  /* HERO */
+  #hero{height:150vh}
+  .hero-copy{max-width:540px;will-change:opacity,transform}
+  .eyebrow{font-size:13px;font-weight:600;letter-spacing:.18em;color:var(--accent);text-transform:uppercase;margin-bottom:18px}
+  .hero-copy h1{font-size:clamp(64px,10vw,140px);font-weight:800;letter-spacing:-.055em;line-height:.92}
+  .hero-copy .tag{font-size:clamp(19px,2vw,24px);color:#3a3a40;margin-top:22px;font-weight:400;letter-spacing:-.01em;font-family:'Noto Sans KR',sans-serif}
+  .hero-actions{display:flex;gap:12px;margin-top:34px;flex-wrap:wrap}
+  .chips{display:flex;gap:8px;margin-top:40px;flex-wrap:wrap}
+  .chip{font-size:12px;padding:7px 12px;border-radius:999px;background:var(--bg2);color:#3a3a40;font-weight:500}
+  .scroll-cue{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);font-size:11px;letter-spacing:.3em;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:10px}
+  .scroll-cue i{width:1px;height:40px;background:linear-gradient(var(--muted),transparent);animation:cue 1.8s ease-in-out infinite;transform-origin:top}
+  @keyframes cue{0%{transform:scaleY(0)}50%{transform:scaleY(1)}100%{transform:scaleY(1);opacity:0}}
+
+  /* FEATURES */
+  .feature-sec{height:240vh}
+  .copy{max-width:440px;will-change:opacity,transform;opacity:0;font-family:'Noto Sans KR','Inter',sans-serif}
+  .copy .num{font-family:'Inter';font-size:13px;font-weight:600;letter-spacing:.16em;color:var(--accent);margin-bottom:16px}
+  .copy h2{font-size:clamp(34px,4.4vw,60px);font-weight:800;letter-spacing:-.045em;line-height:1.08;margin-bottom:18px}
+  .copy p{color:var(--muted);font-size:clamp(15px,1.25vw,18px);line-height:1.75}
+  .meter{margin-top:28px;background:rgba(245,245,247,.92);border-radius:18px;padding:18px 20px;backdrop-filter:blur(10px)}
+  .meter .row{display:flex;justify-content:space-between;align-items:baseline}
+  .meter .lbl{font-size:13px;color:var(--muted)}
+  .meter .val{font-family:'Inter';font-size:30px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .meter .bar{height:6px;border-radius:6px;background:#e3e3e8;margin-top:12px;overflow:hidden}
+  .meter .bar i{display:block;height:100%;width:100%;border-radius:6px;background:linear-gradient(90deg,#9aa9ff,var(--accent));transform-origin:left}
+  .meter .cmp{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:8px}
+  .meter .cmp b{color:var(--fg);font-weight:600}
+
+  @media (max-width:820px){
+    .sticky{align-items:flex-end;justify-content:center!important;padding:0 16px 22px}
+    .copy,.hero-copy{max-width:none;width:100%;background:rgba(255,255,255,.86);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(0,0,0,.05);border-radius:24px;padding:22px}
+    .hero-copy h1{font-size:64px}
+    .copy h2{font-size:30px;margin-bottom:10px}
+    .copy p{font-size:14px;line-height:1.65}
+    .meter{margin-top:16px;padding:14px 16px}
+    .meter .val{font-size:24px}
+    .chips{display:none}
+    .scroll-cue{display:none}
+  }
+
+  /* ---------- SHOP ---------- */
+  #shop{min-height:100vh;padding:120px 7vw 120px;display:flex;justify-content:flex-end}
+  .shop-panel{width:min(520px,100%);background:rgba(255,255,255,.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--line);border-radius:28px;padding:34px;box-shadow:0 30px 80px rgba(0,0,0,.06);font-family:'Noto Sans KR','Inter',sans-serif}
+  .sec-eyebrow{font-family:'Inter';font-size:13px;font-weight:600;letter-spacing:.16em;color:var(--accent);margin-bottom:12px}
+  .sec-title{font-size:clamp(32px,4vw,48px);font-weight:800;letter-spacing:-.045em;line-height:1.1}
+  .sec-sub{color:var(--muted);margin-top:10px;font-size:15px;line-height:1.6}
+  .field-label{font-size:13px;color:var(--muted);margin:28px 0 12px;display:flex;justify-content:space-between}
+  .field-label b{color:var(--fg);font-weight:600}
+  .swatches{display:flex;gap:14px;flex-wrap:wrap}
+  .sw{width:40px;height:40px;border-radius:50%;cursor:pointer;border:1px solid rgba(0,0,0,.12);outline:2px solid transparent;outline-offset:3px;transition:outline-color .2s,transform .2s;position:relative}
+  .sw:hover{transform:scale(1.08)}
+  .sw.on{outline-color:var(--fg)}
+  .sw .ltd{position:absolute;top:-6px;right:-8px;font-size:9px;background:var(--fg);color:#fff;border-radius:6px;padding:2px 4px;font-weight:700}
+  .storage{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .st{padding:16px;border-radius:16px;border:1.5px solid var(--line);background:#fff;cursor:pointer;text-align:left;transition:border-color .2s,background .2s}
+  .st b{display:block;font-size:17px;font-family:'Inter'}
+  .st span{font-size:13px;color:var(--muted)}
+  .st.on{border-color:var(--fg);background:var(--bg2)}
+  .price-box{margin-top:28px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+  .price{font-family:'Inter';font-size:38px;font-weight:700;letter-spacing:-.03em}
+  .price-sub{font-size:13px;color:var(--muted);margin-top:4px}
+  table.ptable{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+  .ptable th{font-weight:500;color:var(--muted);text-align:right;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px}
+  .ptable th:first-child,.ptable td:first-child{text-align:left}
+  .ptable td{padding:12px 0;border-bottom:1px solid var(--line);text-align:right;font-family:'Inter','Noto Sans KR';font-variant-numeric:tabular-nums}
+  .ptable tr.on td{font-weight:700}
+  .dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px;vertical-align:-1px;border:1px solid rgba(0,0,0,.12)}
+  @media (max-width:820px){ #shop{padding:62vh 16px 80px;justify-content:center} .shop-panel{padding:24px} }
+
+  /* ---------- 일반 섹션 ---------- */
+  .solid{position:relative;background:var(--bg);padding:130px 7vw;font-family:'Noto Sans KR','Inter',sans-serif}
+  .solid.gray{background:var(--bg2)}
+  .wrap{max-width:1180px;margin:0 auto}
+  .center{text-align:center}
+
+  /* 회원가입 */
+  .signup-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:56px;align-items:start}
+  .steps{list-style:none;display:flex;flex-direction:column;gap:14px}
+  .steps li{display:flex;gap:18px;background:#fff;border-radius:var(--radius);padding:22px;border:1px solid var(--line)}
+  .steps .n{flex:none;width:36px;height:36px;border-radius:50%;background:var(--fg);color:#fff;display:grid;place-items:center;font-family:'Inter';font-weight:700;font-size:14px}
+  .steps h4{font-size:17px;font-weight:700;margin-bottom:4px;letter-spacing:-.02em}
+  .steps p{font-size:14px;color:var(--muted);line-height:1.6}
+  .form-card{background:#fff;border-radius:28px;padding:34px;border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.05)}
+  .form-card h3{font-size:24px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
+  .form-card .hint{font-size:13px;color:var(--muted);margin-bottom:22px}
+  .f{margin-bottom:14px}
+  .f label{display:block;font-size:13px;font-weight:500;margin-bottom:6px}
+  .f input[type=text],.f input[type=email],.f input[type=tel],.f input[type=password]{width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--line);font-size:15px;background:#fff;transition:border-color .2s,box-shadow .2s;outline:none}
+  .f input:focus{border-color:var(--fg);box-shadow:0 0 0 4px rgba(0,0,0,.05)}
+  .f.bad input{border-color:var(--err)}
+  .f .msg{font-size:12px;color:var(--err);margin-top:5px;min-height:0}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .check{display:flex;gap:10px;align-items:flex-start;font-size:14px;margin:10px 0;cursor:pointer}
+  .check input{margin-top:3px;width:17px;height:17px;accent-color:var(--fg)}
+  .check small{color:var(--muted)}
+  .form-card .btn{width:100%;margin-top:14px;padding:16px}
+  .success{display:none;text-align:center;padding:30px 10px}
+  .success .ok{width:64px;height:64px;border-radius:50%;background:#e9f9ef;color:var(--ok);display:grid;place-items:center;font-size:30px;margin:0 auto 18px}
+  .success h3{margin-bottom:8px}
+  .success p{color:var(--muted);font-size:14px;line-height:1.7}
+  @media (max-width:900px){ .signup-grid{grid-template-columns:1fr} .solid{padding:90px 16px} .form-card{padding:24px} }
+
+  /* 구매 방법 */
+  .buy-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:56px;counter-reset:s}
+  .bstep{background:var(--bg2);border-radius:var(--radius);padding:26px 22px;position:relative;min-height:200px}
+  .bstep .ico{width:44px;height:44px;border-radius:14px;background:#fff;display:grid;place-items:center;margin-bottom:20px}
+  .bstep .ico svg{width:22px;height:22px;stroke:var(--fg);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .bstep .k{font-family:'Inter';font-size:12px;font-weight:600;color:var(--accent);letter-spacing:.12em;margin-bottom:6px}
+  .bstep h4{font-size:17px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px}
+  .bstep p{font-size:13px;color:var(--muted);line-height:1.6}
+  @media (max-width:1000px){ .buy-steps{grid-template-columns:1fr 1fr} }
+  @media (max-width:560px){ .buy-steps{grid-template-columns:1fr} .bstep{min-height:0} }
+
+  .order{margin:40px auto 0;max-width:640px;border:1px solid var(--line);border-radius:28px;padding:30px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;justify-content:space-between}
+  .order .o-left{display:flex;align-items:center;gap:16px}
+  .order .o-dot{width:52px;height:52px;border-radius:16px;border:1px solid rgba(0,0,0,.1)}
+  .order h4{font-size:18px;font-weight:700;letter-spacing:-.02em}
+  .order .o-sub{font-size:13px;color:var(--muted);margin-top:3px}
+  .order .o-price{font-family:'Inter';font-size:24px;font-weight:700;letter-spacing:-.02em}
+  .toast{position:fixed;left:50%;bottom:30px;transform:translate(-50%,20px);background:var(--fg);color:#fff;padding:14px 22px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .3s,transform .3s;z-index:60;pointer-events:none;font-family:'Noto Sans KR';max-width:calc(100% - 32px);text-align:center}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  footer{position:relative;background:var(--bg);border-top:1px solid var(--line);padding:50px 7vw;display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--muted);font-family:'Noto Sans KR','Inter'}
+  footer b{color:var(--fg)}
+
+  /* 디자인 디테일 & 사양 */
+  .design-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:56px}
+  .dcard{background:var(--bg2);border-radius:24px;padding:22px}
+  .dvis{height:150px;border-radius:18px;margin-bottom:20px;position:relative;overflow:hidden}
+  .v-line{background:linear-gradient(160deg,#f3f2ee,#e2e0da)}
+  .v-line i{position:absolute;left:14%;right:14%;top:50%;height:4px;border-radius:4px;background:linear-gradient(90deg,#b08a5a,#f0d9b5,#b08a5a);box-shadow:0 1px 6px rgba(176,138,90,.5)}
+  .v-frame{background:linear-gradient(100deg,#8e9096 0%,#e9eaec 22%,#a4a7ad 40%,#f6f6f7 58%,#9a9da3 78%,#d6d7da 100%)}
+  .v-glass{background:radial-gradient(120% 90% at 20% 10%,#ffffff,#e3e8ef 50%,#c9d4e1);}
+  .v-glass::after{content:"";position:absolute;inset:0;background:repeating-radial-gradient(circle at 30% 30%,rgba(255,255,255,.06) 0 2px,transparent 2px 4px)}
+  .v-cover{background:linear-gradient(145deg,#06070a,#171a26);display:flex;align-items:flex-start;justify-content:flex-end;padding:16px 18px;color:#fff;font:200 40px Inter}
+  .v-cover b{position:absolute;top:18px;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#4a5bd0,#05060a 60%);box-shadow:0 0 0 3px #c9a77c}
+  .v-cover b:nth-of-type(1){left:18px}.v-cover b:nth-of-type(2){left:58px}
+  .dcard h4{font-size:18px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px}
+  .dcard p{font-size:14px;color:var(--muted);line-height:1.65}
+  .specs{display:grid;grid-template-columns:1fr 1fr;column-gap:56px;margin:48px auto 0;max-width:980px}
+  .specs div{display:grid;grid-template-columns:150px 1fr;gap:16px;padding:20px 0;border-bottom:1px solid var(--line)}
+  .specs dt{font-size:14px;color:var(--muted)}
+  .specs dd{font-size:15px;line-height:1.6;font-weight:500}
+  @media (max-width:1000px){ .design-grid{grid-template-columns:1fr 1fr} .specs{grid-template-columns:1fr} }
+  @media (max-width:560px){ .design-grid{grid-template-columns:1fr} .specs div{grid-template-columns:110px 1fr} }
+  /* 로그인 · 주문서 · 내 주문 */
+  .switch{font-size:13px;color:var(--muted);text-align:center;margin-top:16px}
+  .switch a{color:var(--fg);font-weight:600;cursor:pointer;text-decoration:underline}
+  .form-err{font-size:13px;color:var(--err);margin-top:10px;text-align:center;min-height:1.2em}
+  .modal{position:fixed;inset:0;z-index:70;background:rgba(10,10,15,.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px;font-family:'Noto Sans KR','Inter',sans-serif}
+  .modal.open{display:flex}
+  .modal-card{background:#fff;border-radius:28px;width:min(540px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:30px;box-shadow:0 40px 120px rgba(0,0,0,.2)}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+  .modal-head h3{font-size:22px;font-weight:800;letter-spacing:-.03em}
+  .x{border:0;background:var(--bg2);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:20px;line-height:1}
+  .sum{background:var(--bg2);border-radius:16px;padding:16px 18px;margin-bottom:18px;font-size:14px}
+  .sum .r{display:flex;justify-content:space-between;padding:4px 0}
+  .sum .r.t{border-top:1px solid var(--line);margin-top:8px;padding-top:10px;font-weight:700;font-size:16px}
+  .pay-note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:4px}
+  .modal .f input{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid var(--line);font-size:15px;outline:none}
+  .modal .f input:focus{border-color:var(--fg)}
+  .modal .f.bad input{border-color:var(--err)}
+  .myorders{max-width:640px;margin:26px auto 0;display:none;font-family:'Noto Sans KR','Inter',sans-serif}
+  .myorders h4{font-size:15px;margin-bottom:6px}
+  .mo{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .mo small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+  .badge{font-size:12px;padding:4px 10px;border-radius:999px;background:var(--bg2);white-space:nowrap}
+  body.can-drag{cursor:grab}
+  body.dragging,body.dragging *{cursor:grabbing!important;user-select:none}
+  .drag-hint{position:absolute;right:7vw;bottom:34px;font-size:13px;color:var(--muted);background:rgba(245,245,247,.9);padding:9px 16px;border-radius:999px;animation:hintIn 1s .8s both}
+  @keyframes hintIn{from{opacity:0;transform:translateY(8px)}}
+  @media (max-width:820px){ .drag-hint{left:16px;right:16px;bottom:auto;top:72px;text-align:center;font-size:12px} }
+  @media (hover:hover) and (max-width:820px){ .drag-hint{display:none} }
+  #bhero .sticky,#bshop{touch-action:pan-y pinch-zoom}
+  .reveal{opacity:0;transform:translateY(36px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- BK pierce 전용 ---------- */
+  #crowd{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+  #dim{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;--sx:65%;--sy:45%;
+       background:radial-gradient(circle at var(--sx) var(--sy),#2b2f3a 0%,#11141b 26%,#06070a 60%)}
+  #bhero{height:150vh}
+  #bshop{min-height:100vh;padding:120px 7vw 120px;display:flex;justify-content:flex-end}
+  @media (max-width:820px){ #bshop{padding:62vh 16px 80px;justify-content:center} }
+  .copy h2,.copy p,.copy .num,.meter,.meter .val,nav,nav .brand b,nav .nav-links a{transition:color .5s,background .5s,border-color .5s}
+  body.dark .copy h2{color:#f2f4f8} body.dark .copy p{color:#9aa3b2} body.dark .copy .num{color:#9cc8ff}
+  body.dark .meter{background:rgba(255,255,255,.06)} body.dark .meter .val,body.dark .meter .cmp b{color:#fff} body.dark .meter .bar{background:rgba(255,255,255,.12)}
+  body.dark nav{background:rgba(8,10,14,.6);border-color:rgba(255,255,255,.08)} body.dark nav .brand b{color:#fff} body.dark nav .nav-links a.hide-m{color:#9aa3b2} body.dark nav .btn-dark{background:#fff;color:#111!important}
+  body.dark .drag-hint{background:rgba(255,255,255,.08);color:#aab}
+  @media (max-width:820px){ body.dark .copy{background:rgba(12,14,20,.84);border-color:rgba(255,255,255,.08)} }
+  .view-ind{margin-top:22px;display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border-radius:999px;background:rgba(245,245,247,.92);font-size:14px;font-weight:500;transition:background .4s,color .4s}
+  .view-ind i{width:10px;height:10px;border-radius:50%;background:#b5b7bd;transition:background .4s,box-shadow .4s}
+  .view-ind[data-st="2"]{background:rgba(255,255,255,.08);color:#cfe6ff}
+  .view-ind[data-st="2"] i{background:#7fc4ff;box-shadow:0 0 0 5px rgba(127,196,255,.22)}
+  /* 음악 플레이어 카드 (03) */
+  .np{margin-top:26px;display:flex;align-items:center;gap:14px;padding:14px;border-radius:20px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08)}
+  .np-art{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#ff9a8b,#7c6cff);flex:none;transition:background .5s}
+  .np-info{flex:1;min-width:0;display:flex;flex-direction:column}
+  .np-info b{font-size:16px;color:#fff} .np-info span{font-size:13px;color:#9aa3b2}
+  .np-state{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#111;font-size:16px;flex:none;transition:transform .2s}
+  .np-state.paused{background:#ffd479}
+  .np-vol{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:13px;color:#9aa3b2;font-family:Inter}
+  .np-bar{flex:1;height:6px;border-radius:6px;background:rgba(255,255,255,.12);overflow:hidden}
+  .np-bar i{display:block;height:100%;width:40%;background:linear-gradient(90deg,#9cc8ff,#fff);border-radius:6px;transition:width .15s}
+  .gest{list-style:none;margin-top:16px;display:flex;flex-direction:column;gap:8px}
+  .gest li{font-size:14px;color:#7d8696;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.06);transition:all .3s}
+  .gest li b{color:#c9d1dd;margin-right:8px;font-weight:600}
+  .gest li.on{background:rgba(156,200,255,.12);border-color:rgba(156,200,255,.5);color:#e6f0ff}
+  .gest li.on b{color:#fff}
+  body:not(.dark) .np{background:var(--bg2);border-color:var(--line)} body:not(.dark) .np-info b{color:var(--fg)}
+  /* 01 착용 체크리스트 */
+  .fitlist{list-style:none;margin-top:16px;display:flex;flex-direction:column;gap:8px}
+  .fitlist li{font-size:14px;color:var(--muted);display:flex;gap:10px;align-items:center;transition:color .3s}
+  .fitlist li i{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;background:var(--bg2);color:#b5b7bd;transition:all .3s}
+  .fitlist li.on{color:var(--fg)} .fitlist li.on i{background:var(--accent);color:#fff}
+  /* 함께 쓰기 카드 그림 */
+  .v-pop{background:linear-gradient(160deg,#f3f4f7,#e3e6ec);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+  .v-pop b{width:86px;height:34px;border-radius:50% 50% 16px 16px/80% 80% 16px 16px;background:linear-gradient(180deg,rgba(255,255,255,.7) 50%,#1d1f24 50%);box-shadow:0 10px 24px rgba(0,0,0,.18),0 18px 0 -16px #7fe3ff}
+  .v-pop span{font-size:12px;background:#fff;padding:6px 12px;border-radius:999px;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+  .v-bat{background:radial-gradient(circle at 50% 60%,#1f2a36,#0a0d12);display:grid;place-items:center}
+  .v-bat span{color:#bff3ff;font:600 36px Inter;text-shadow:0 0 14px rgba(127,227,255,.9)}
+  .v-bat span::after{content:"%"}
+  .v-call{background:linear-gradient(160deg,#f4f6f9,#e6ebf2);display:flex;align-items:center;justify-content:center;gap:8px}
+  .v-call i{width:8px;border-radius:4px;background:#2f5bff;animation:eq 1s ease-in-out infinite}
+  .v-call i:nth-child(1){height:30px}.v-call i:nth-child(2){height:56px;animation-delay:.2s}.v-call i:nth-child(3){height:40px;animation-delay:.4s}
+  @keyframes eq{50%{transform:scaleY(.4)}}
+  .v-time{background:linear-gradient(160deg,#efeeea,#dcdad3);display:flex;align-items:baseline;justify-content:center;padding-top:44px;gap:6px}
+  .v-time b{font:800 56px Inter;letter-spacing:-.04em} .v-time span{font-size:16px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<canvas id="crowd"></canvas>
+<div id="dim"></div>
+<canvas id="gl"></canvas>
+
+<nav>
+  <a class="brand" data-to="#bhero"><b>BK pierce</b><span>BumBum Company</span></a>
+  <div class="nav-links">
+    <a class="hide-m" href="/">BK phone</a>
+    <a class="hide-m" data-to="#b1">기능</a>
+    <a class="hide-m" data-to="#bshop">색상·가격</a>
+    <a class="hide-m" data-to="#bpair">함께 쓰기</a>
+    <a class="btn btn-dark btn-sm" data-to="#bshop" style="color:#fff">구매하기</a>
+  </div>
+</nav>
+
+<main>
+  <!-- ===== HERO ===== -->
+  <section id="bhero" class="sticky-sec">
+    <div class="sticky">
+      <div class="hero-copy" id="heroCopy">
+        <div class="eyebrow">NEW · BumBum Company</div>
+        <h1>BK pierce</h1>
+        <p class="tag">귀를 뚫지 않는 피어싱, 귀에 거는 음악.</p>
+        <div class="hero-actions">
+          <a class="btn btn-dark" data-to="#bshop">구매하기</a>
+          <a class="btn btn-ghost" data-to="#b1">기능 살펴보기</a>
+        </div>
+        <div class="chips">
+          <span class="chip">No Piercing</span><span class="chip">8H Comfort</span><span class="chip">3.2g</span><span class="chip">Silence ANC</span><span class="chip">Touch Control</span>
+        </div>
+      </div>
+      <div class="drag-hint" id="dragHint">↻ 피어싱을 마우스로 끌어서 돌려보세요</div>
+      <div class="scroll-cue">SCROLL<i></i></div>
+    </div>
+  </section>
+
+  <!-- ===== 01 귀를 뚫지 않는 피어싱 ===== -->
+  <section id="b1" class="sticky-sec feature-sec">
+    <div class="sticky">
+      <div class="copy">
+        <div class="num">01 — NO PIERCING NEEDED</div>
+        <h2>귀를 뚫지 않는<br>피어싱.</h2>
+        <p>귓바퀴에 살짝 밀어 끼우기만 하면 끝. 형상 기억 티타늄 링이 귀를 부드럽게 감싸서, 피어싱처럼 보이지만 귀를 뚫을 필요가 없어요. 귓구멍을 막지 않는 오픈형이라 하루 종일 껴도 귀가 아프지 않습니다.</p>
+        <div class="meter">
+          <div class="row"><span class="lbl">귀를 누르는 힘</span><span class="val" id="m0">1.8N</span></div>
+          <div class="bar"><i id="b0b"></i></div>
+          <div class="cmp"><span>귀에 꽂는 이어폰 1.8N</span><span><b>BK pierce 0.3N</b></span></div>
+        </div>
+        <ul class="fitlist">
+          <li id="c1"><i>✓</i>귀 뚫기 필요 없음 · 끼우기만 하면 끝</li>
+          <li id="c2"><i>✓</i>귓구멍에 넣지 않는 오픈형</li>
+          <li id="c3"><i>✓</i>의료용 실리콘 안감 · 8시간 착용 테스트 통과</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 02 가벼움 ===== -->
+  <section id="b2" class="sticky-sec feature-sec">
+    <div class="sticky right">
+      <div class="copy">
+        <div class="num">02 — FEATHERLIGHT</div>
+        <h2>귀에 걸어도,<br>없는 것처럼.</h2>
+        <p>한쪽 3.2g. 속이 빈 티타늄 링과 초소형 드라이버로 무게를 덜어냈습니다. 하루 종일 걸고 있어도 귀가 편안해서, 하고 있다는 사실을 잊게 돼요.</p>
+        <div class="meter">
+          <div class="row"><span class="lbl">한쪽 무게</span><span class="val" id="m1">5.4g</span></div>
+          <div class="bar"><i id="b1b"></i></div>
+          <div class="cmp"><span>일반 무선 이어폰 5.4g</span><span><b>BK pierce 3.2g</b></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 03 노이즈 캔슬링 ===== -->
+  <section id="b3" class="sticky-sec feature-sec">
+    <div class="sticky">
+      <div class="copy">
+        <div class="num">03 — SILENCE ANC</div>
+        <h2>붐비는 거리도,<br>한순간에 고요하게.</h2>
+        <p>귀를 막지 않는데도 조용해요. 바깥 소리를 1초에 4만 8천 번 듣고, 정반대의 소리를 귓가에 쏘아 지워 냅니다. 사람들의 말소리, 자동차 경적까지 사라지고 오직 음악만 남아요.</p>
+        <div class="meter">
+          <div class="row"><span class="lbl">들리는 주변 소음</span><span class="val" id="m2">78dB</span></div>
+          <div class="bar"><i id="b2b"></i></div>
+          <div class="cmp"><span>붐비는 거리 78dB</span><span><b>BK pierce 착용 시 3dB</b></span></div>
+        </div>
+        <div class="view-ind" id="ncInd"><i></i><span id="ncTxt">노이즈 캔슬링 꺼짐</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 04 터치 조작 ===== -->
+  <section id="b4" class="sticky-sec feature-sec">
+    <div class="sticky right">
+      <div class="copy">
+        <div class="num">04 — TOUCH CONTROL</div>
+        <h2>휴대폰 없이,<br>피어싱으로 바로.</h2>
+        <p>귀에 건 구슬을 가볍게 누르고, 링을 따라 쓸어 보세요. 휴대폰을 꺼내지 않아도 음악을 멈추고, 볼륨을 바꾸고, 다음 곡으로 넘길 수 있어요.</p>
+        <div class="np">
+          <div class="np-art" id="npArt"></div>
+          <div class="np-info"><b id="npTitle">Midnight Drive</b><span id="npArtist">Lofi Seoul</span></div>
+          <span class="np-state" id="npState">▶</span>
+        </div>
+        <div class="np-vol"><span>🔈</span><div class="np-bar"><i id="npVol"></i></div><span id="npVolTxt">40%</span></div>
+        <ul class="gest">
+          <li id="g1"><b>구슬 한 번 톡</b> 재생 / 정지</li>
+          <li id="g2"><b>링을 따라 쓸기</b> 볼륨 조절</li>
+          <li id="g3"><b>구슬 두 번 톡</b> 다음 곡</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 색상 · 케이스 · 가격 ===== -->
+  <section id="bshop">
+    <div class="shop-panel reveal">
+      <div class="sec-eyebrow">COLORS &amp; CASE</div>
+      <h2 class="sec-title">나에게 맞는<br>BK pierce 고르기</h2>
+      <p class="sec-sub">색상을 누르면 왼쪽의 케이스와 피어싱 색이 바로 바뀝니다. 마우스로 끌어 돌려볼 수도 있어요.</p>
+
+      <div class="field-label"><span>색상</span><b id="colorName">카라멜 브라운</b></div>
+      <div class="swatches" id="swatches"></div>
+
+      <div class="field-label"><span>케이스</span></div>
+      <div class="storage" id="options"></div>
+
+      <div class="price-box">
+        <div>
+          <div class="price" id="price">₩249,000</div>
+          <div class="price-sub" id="priceSub"></div>
+        </div>
+        <button class="btn btn-dark" id="orderBtn">주문하기</button>
+      </div>
+
+      <div class="field-label" style="margin-top:34px"><span>전체 가격표</span></div>
+      <table class="ptable">
+        <thead id="ptHead"></thead>
+        <tbody id="ptable"></tbody>
+      </table>
+
+      <div class="myorders" id="myOrders" style="margin-top:26px">
+        <h4>내 주문 내역</h4>
+        <div id="myOrderList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== BK phone과 함께 + 사양 ===== -->
+  <section id="bpair" class="solid">
+    <div class="wrap">
+      <div class="center reveal">
+        <div class="sec-eyebrow">BETTER TOGETHER</div>
+        <h2 class="sec-title">BK phone과 함께라면</h2>
+        <p class="sec-sub">케이스에서 커프를 꺼내기만 하면 BK phone과 바로 연결됩니다.</p>
+      </div>
+      <div class="design-grid">
+        <div class="dcard reveal"><div class="dvis v-pop"><b></b><span>BK pierce 연결됨</span></div><h4>꺼내면 바로 연결</h4><p>커프를 꺼내는 순간 BK phone 화면에 양쪽 커프와 케이스 배터리가 함께 떠요.</p></div>
+        <div class="dcard reveal"><div class="dvis v-bat"><span>100</span></div><h4>빛나는 배터리 표시</h4><p>케이스 앞면에 남은 배터리가 빛나는 숫자로 떠오릅니다.</p></div>
+        <div class="dcard reveal"><div class="dvis v-call"><i></i><i></i><i></i></div><h4>또렷한 통화</h4><p>마이크 3개가 내 목소리만 골라 담아, 시끄러운 곳에서도 상대가 잘 들려요.</p></div>
+        <div class="dcard reveal"><div class="dvis v-time"><b>40</b><span>시간</span></div><h4>오래가는 배터리</h4><p>커프만 8시간, 케이스와 함께 최대 40시간. 10분 충전으로 2시간 들을 수 있어요.</p></div>
+      </div>
+      <div class="center reveal" style="margin-top:40px">
+        <a class="btn btn-ghost" href="/">BK phone 보러 가기 →</a>
+      </div>
+
+      <div class="center reveal" style="margin-top:110px">
+        <div class="sec-eyebrow">SPECS</div>
+        <h2 class="sec-title">한눈에 보는 사양</h2>
+      </div>
+      <dl class="specs reveal">
+        <div><dt>무게</dt><dd>한쪽 3.2g · 케이스 41g</dd></div>
+        <div><dt>착용</dt><dd>귀 뚫기 필요 없음 · 형상 기억 티타늄 커프<br>의료용 실리콘 안감 · 사이즈 3종</dd></div>
+        <div><dt>노이즈 캔슬링</dt><dd>Silence ANC (최대 -75dB)<br>주변 소리 듣기 모드</dd></div>
+        <div><dt>조작</dt><dd>구슬 톡: 재생/정지 · 링 쓸기: 볼륨<br>구슬 두 번 톡: 다음 곡 · 길게 누르기: 모드 전환</dd></div>
+        <div><dt>배터리</dt><dd>커프 8시간 · 케이스 포함 40시간</dd></div>
+        <div><dt>충전</dt><dd>USB-C · 무선충전 (무선충전 케이스)</dd></div>
+        <div><dt>드라이버</dt><dd>10mm 지향성 드라이버 (소리가 밖으로 새지 않음) · Hi-Res</dd></div>
+        <div><dt>통화</dt><dd>마이크 3개 · 바람 소리 줄임</dd></div>
+        <div><dt>연결</dt><dd>Bluetooth 5.4 · 두 기기 동시 연결</dd></div>
+        <div><dt>방수</dt><dd>IPX5 (땀·비 방수)</dd></div>
+        <div><dt>구성품</dt><dd>피어싱 커프 1쌍 · 미래형 충전 케이스 · 실리콘 안감 3쌍 · USB-C 케이블</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <footer>
+    <div><b>BumBum Company</b> · BK pierce</div>
+    <div>© 2026 BumBum Company. 이 사이트는 가상 제품 데모입니다.</div>
+  </footer>
+</main>
+
+<!-- 주문서 (로그인 안 했으면 로그인부터) -->
+<div class="modal" id="orderModal" role="dialog" aria-modal="true" aria-labelledby="orderTitle">
+  <div class="modal-card">
+    <div class="modal-head"><h3 id="orderTitle">주문서</h3><button class="x" data-close aria-label="닫기">×</button></div>
+
+    <form id="loginForm" novalidate>
+      <p class="hint" style="margin-bottom:16px;color:var(--muted);font-size:14px">주문하려면 BumBum 계정으로 로그인해 주세요. BK phone 사이트와 같은 계정이에요.</p>
+      <div class="f"><label for="lemail">이메일</label><input type="email" id="lemail" autocomplete="email"><div class="msg"></div></div>
+      <div class="f"><label for="lpw">비밀번호</label><input type="password" id="lpw" autocomplete="current-password"><div class="msg"></div></div>
+      <button class="btn btn-dark" type="submit" style="width:100%;margin-top:6px;padding:16px">로그인</button>
+      <div class="form-err" id="loginErr"></div>
+      <p class="switch">아직 회원이 아니신가요? <a href="/#signup">회원가입하러 가기</a></p>
+    </form>
+
+    <form id="orderForm" novalidate style="display:none">
+      <div class="sum">
+        <div class="r"><span id="sumName">BK pierce</span><span id="sumUnit"></span></div>
+        <div class="r" id="sumDiscRow"><span>첫 구매 5% 할인</span><span id="sumDisc"></span></div>
+        <div class="r"><span>배송비</span><span>무료</span></div>
+        <div class="r t"><span>결제 예정 금액</span><span id="sumTotal"></span></div>
+      </div>
+      <div class="two">
+        <div class="f"><label for="oRecipient">받는 분 *</label><input type="text" id="oRecipient" autocomplete="name"><div class="msg"></div></div>
+        <div class="f"><label for="oPhone">연락처 *</label><input type="tel" id="oPhone" autocomplete="tel" placeholder="010-1234-5678"><div class="msg"></div></div>
+      </div>
+      <div class="f"><label for="oZip">우편번호 *</label><input type="text" id="oZip" inputmode="numeric" maxlength="5" placeholder="48058" autocomplete="postal-code"><div class="msg"></div></div>
+      <div class="f"><label for="oAddr">주소 *</label><input type="text" id="oAddr" placeholder="부산광역시 해운대구 ○○로 00, 101동 1001호" autocomplete="street-address"><div class="msg"></div></div>
+      <div class="f"><label for="oMemo">배송 요청사항</label><input type="text" id="oMemo" placeholder="문 앞에 놓아 주세요" maxlength="200"><div class="msg"></div></div>
+      <p class="pay-note">결제는 아직 연결되지 않았어요. 주문이 접수되면 관리자가 확인 후 결제 안내를 드립니다.</p>
+      <button class="btn btn-dark" type="submit" id="orderSubmit" style="width:100%;margin-top:10px;padding:16px">주문 접수하기</button>
+      <div class="form-err" id="orderErr"></div>
+      <p class="switch" id="whoami"></p>
+    </form>
+
+    <div class="success" id="orderDone">
+      <div class="ok">✓</div>
+      <h3>주문이 접수되었어요</h3>
+      <p>주문번호 <b id="doneNo"></b><br>결제 금액 <b id="doneTotal"></b><br>확인 후 연락드릴게요.</p>
+      <button class="btn btn-dark" data-close style="width:auto;margin-top:20px">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script>
+/* =====================================================================
+   0. 상품 데이터 (화면 표시용 기본값. 실제 가격은 서버가 기준)
+   ===================================================================== */
+let BCOLORS = [
+  { id: "p-silver", name: "미러 실버",          hex: "#d9dde3", base: "#1d1f24", glow: "#7fe3ff", extra: 0 },
+  { id: "p-rose",   name: "로즈 골드",          hex: "#e3b7a0", base: "#2a2224", glow: "#ffb3c7", extra: 0 },
+  { id: "p-onyx",   name: "오닉스 블랙",        hex: "#3a3b41", base: "#111215", glow: "#b18cff", extra: 0 },
+  { id: "p-pearl",  name: "펄 화이트 (한정판)", hex: "#f4f2ee", base: "#e6e3dd", glow: "#7fd0ff", extra: 30000 }
+];
+let OPTIONS = [
+  { id: "std",      name: "기본 케이스",     price: 249000 },
+  { id: "wireless", name: "무선충전 케이스", price: 279000 }
+];
+const sel = { color: 0, opt: 0 };
+const won = n => "₩" + Number(n).toLocaleString("ko-KR");
+const $ = id => document.getElementById(id);
+const clamp01 = v => Math.max(0, Math.min(1, v));
+const smooth = (a, b, x) => { const t = clamp01((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+const ease = t => t * t * (3 - 2 * t);
+
+/* =====================================================================
+   1. 부드러운 스크롤
+   ===================================================================== */
+let lenis = null;
+try { lenis = new Lenis({ lerp: 0.085, smoothWheel: true, wheelMultiplier: 0.9 }); } catch (e) { lenis = null; }
+function scrollToEl(s) {
+  const el = document.querySelector(s); if (!el) return;
+  const y = el.getBoundingClientRect().top + window.scrollY;
+  if (lenis) lenis.scrollTo(y, { duration: 1.6 }); else window.scrollTo({ top: y, behavior: "smooth" });
+}
+document.querySelectorAll("[data-to]").forEach(a => a.addEventListener("click", e => { e.preventDefault(); scrollToEl(a.dataset.to); }));
+
+/* =====================================================================
+   2. 붐비는 거리 배경 (2D 캔버스 애니메이션)
+   ===================================================================== */
+const crowdC = $("crowd"), cctx = crowdC.getContext("2d");
+const bgC = document.createElement("canvas"), bgx = bgC.getContext("2d");
+let CWd = 0, CHt = 0;
+function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const rnd = mulberry(7);
+const PAL = ["#c9b8a6", "#b7c0c9", "#c7b3b8", "#b9c2b0", "#cbbfa9", "#aeb6c4", "#c2b0a0", "#b4bcb6"];
+const LAYERS = [{ s: 0.55, g: 0.6, n: 18, a: 0.55 }, { s: 0.8, g: 0.74, n: 13, a: 0.75 }, { s: 1.15, g: 0.93, n: 9, a: 0.95 }];
+const people = [];
+LAYERS.forEach((L, li) => { for (let i = 0; i < L.n; i++) people.push({
+  li, x: rnd(), dir: rnd() < 0.5 ? -1 : 1, speed: (0.012 + rnd() * 0.02) * (0.7 + li * 0.4),
+  h: 0.88 + rnd() * 0.25, col: PAL[(rnd() * PAL.length) | 0], ph: rnd() * 6.28, bag: rnd() < 0.3, phone: rnd() < 0.25 }); });
+const SAYS = ["웅성웅성", "ㅋㅋㅋㅋ", "빵빵!", "여보세요?", "어디야?", "♪♬", "세일 중이에요!", "야~!", "🚗 부릉"];
+const talkers = people.filter(p => p.li > 0).slice(0, 9).map((p, i) => ({ p, text: SAYS[i % SAYS.length], off: rnd() * 6, dur: 2.2 + rnd() * 1.5 }));
+
+function drawBg() {   // 고정 배경(하늘, 건물, 보케)은 크기가 바뀔 때만 그림
+  bgC.width = CWd; bgC.height = CHt;
+  const c = bgx, W = CWd, H = CHt;
+  const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#f6f3ef"); g.addColorStop(1, "#e8e2d9");
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+  const r2 = mulberry(3);
+  for (let i = 0; i < 14; i++) {   // 멀리 보이는 건물
+    const w = W * (0.06 + r2() * 0.08), h = H * (0.25 + r2() * 0.35), x = (i / 14) * W + r2() * 40 - 20, y = H * 0.62 - h;
+    c.fillStyle = `rgba(${200 + r2() * 20 | 0},${195 + r2() * 15 | 0},${188 + r2() * 15 | 0},.55)`; c.fillRect(x, y, w, h);
+    c.fillStyle = "rgba(255,255,255,.35)";
+    for (let yy = y + 12; yy < H * 0.6 - 10; yy += 22) for (let xx = x + 8; xx < x + w - 10; xx += 18) if (r2() < 0.7) c.fillRect(xx, yy, 8, 10);
+  }
+  for (let i = 0; i < 26; i++) {   // 따뜻한 빛 번짐(보케)
+    const x = r2() * W, y = H * (0.15 + r2() * 0.5), r = 10 + r2() * 40;
+    const bg = c.createRadialGradient(x, y, 0, x, y, r);
+    bg.addColorStop(0, `rgba(255,${190 + r2() * 40 | 0},140,.28)`); bg.addColorStop(1, "rgba(255,220,180,0)");
+    c.fillStyle = bg; c.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  c.fillStyle = "rgba(210,202,190,.6)"; c.fillRect(0, H * 0.6, W, H * 0.4);   // 인도
+}
+function sizeCrowd() { CWd = crowdC.width = window.innerWidth; CHt = crowdC.height = window.innerHeight; drawBg(); }
+function drawPerson(c, p, x, gy, ph, t) {
+  const L = LAYERS[p.li], hh = CHt * 0.34 * L.s * p.h;
+  const sw = Math.sin(t * 4.2 * (0.8 + p.speed * 20) + p.ph);
+  const bob = Math.abs(sw) * hh * 0.012;
+  const hipY = gy - hh * 0.45 - bob, neckY = hipY - hh * 0.33, headR = hh * 0.075;
+  c.strokeStyle = c.fillStyle = p.col; c.lineCap = "round"; c.globalAlpha = L.a;
+  c.lineWidth = hh * 0.07;
+  [[1, sw], [-1, -sw]].forEach(([k, s]) => {   // 다리
+    c.beginPath(); c.moveTo(x, hipY); c.lineTo(x + s * hh * 0.13, gy - bob * 0.3); c.stroke();
+  });
+  c.beginPath(); rrp(c, x - hh * 0.1, neckY, hh * 0.2, hh * 0.36, hh * 0.07); c.fill();   // 몸통
+  c.lineWidth = hh * 0.055;
+  c.beginPath(); c.moveTo(x, neckY + hh * 0.05); c.lineTo(x - sw * hh * 0.1, neckY + hh * 0.3); c.stroke();   // 팔
+  if (p.phone) { c.beginPath(); c.moveTo(x, neckY + hh * 0.05); c.lineTo(x + p.dir * hh * 0.05, neckY - hh * 0.02); c.stroke(); }
+  else { c.beginPath(); c.moveTo(x, neckY + hh * 0.05); c.lineTo(x + sw * hh * 0.1, neckY + hh * 0.3); c.stroke(); }
+  c.beginPath(); c.arc(x, neckY - headR * 1.1, headR, 0, Math.PI * 2); c.fill();   // 머리
+  if (p.bag) { c.fillRect(x + p.dir * -hh * 0.14, neckY + hh * 0.12, hh * 0.08, hh * 0.13); }
+  c.globalAlpha = 1;
+  return neckY - headR * 2.4;
+}
+function rrp(c, x, y, w, h, r) { c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+function drawCrowd(t, amt) {
+  const c = cctx, W = CWd, H = CHt;
+  c.drawImage(bgC, 0, 0);
+  const headTops = new Map();
+  for (const p of people) {
+    const x = (((p.x + p.dir * p.speed * t) % 1.2) + 1.2) % 1.2 * W - W * 0.1;
+    headTops.set(p, [x, drawPerson(c, p, x, H * LAYERS[p.li].g, p.ph, t)]);
+  }
+  // 소음 파형 (지글지글한 선)
+  c.lineWidth = 2;
+  for (let k = 0; k < 3; k++) {
+    c.strokeStyle = `rgba(150,130,115,${0.22 * amt})`; c.beginPath();
+    const y0 = H * (0.3 + k * 0.12);
+    for (let x = 0; x <= W; x += 14) {
+      const a = (Math.sin(x * 0.05 + t * 9 + k) + Math.sin(x * 0.013 - t * 5 + k * 2) * 0.6 + (Math.random() - 0.5) * 0.8) * 16 * amt;
+      x ? c.lineTo(x, y0 + a) : c.moveTo(x, y0 + a);
+    }
+    c.stroke();
+  }
+  // 말풍선
+  c.font = "500 15px 'Noto Sans KR', sans-serif"; c.textAlign = "center";
+  for (const tk of talkers) {
+    const ph = ((t + tk.off) % (tk.dur + 1.6));
+    if (ph > tk.dur) continue;
+    const a = Math.min(1, ph * 3, (tk.dur - ph) * 3) * amt, [x, y] = headTops.get(tk.p);
+    const tw = c.measureText(tk.text).width + 22;
+    c.globalAlpha = a; c.fillStyle = "rgba(255,255,255,.92)"; c.beginPath(); rrp(c, x - tw / 2, y - 34 - ph * 4, tw, 28, 14); c.fill();
+    c.fillStyle = "#6d6258"; c.fillText(tk.text, x, y - 15 - ph * 4); c.globalAlpha = 1;
+  }
+  // 왼쪽 글자가 잘 읽히도록 흰색 그라데이션
+  if (W > 820) {
+    const g = c.createLinearGradient(0, 0, W * 0.6, 0);
+    g.addColorStop(0, "rgba(255,255,255,.94)"); g.addColorStop(0.6, "rgba(255,255,255,.8)"); g.addColorStop(1, "rgba(255,255,255,0)");
+    c.fillStyle = g; c.fillRect(0, 0, W * 0.6, H);
+  }
+}
+
+/* =====================================================================
+   3. Three.js 장면 — BK pierce 3D 모델
+   ===================================================================== */
+const canvas = $("gl");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.setClearColor(0x000000, 0);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(30, 1, 0.05, 100);
+camera.position.set(0, 0.55, 6.2); camera.lookAt(0, 0, 0);
+
+(function makeEnv() {
+  const pmrem = new THREE.PMREMGenerator(renderer), env = new THREE.Scene();
+  env.add(new THREE.Mesh(new THREE.BoxGeometry(20, 20, 20), new THREE.MeshBasicMaterial({ color: new THREE.Color(0.62, 0.6, 0.58), side: THREE.BackSide })));
+  const panel = (w, h, x, y, z, k) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(k, k, k), side: THREE.DoubleSide })); m.position.set(x, y, z); m.lookAt(0, 0, 0); env.add(m); };
+  panel(9, 2.4, 0, 9, 2, 8); panel(1.6, 10, -9, 1, 5, 4.5); panel(1.6, 10, 9, 0, 3, 3); panel(6, 6, 0, 2, -9, 1.4); panel(10, 3, 0, -8, 6, 1.1);
+  scene.environment = pmrem.fromScene(env, 0.035).texture;
+})();
+scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+const keyLight = new THREE.DirectionalLight(0xffffff, 0.9); keyLight.position.set(3, 5, 6); scene.add(keyLight);
+const rimLight = new THREE.DirectionalLight(0xfff0e0, 0.5); rimLight.position.set(-5, 2, -4); scene.add(rimLight);
+
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+function rrShape(x0, y0, x1, y1, tl, tr, br, bl) {
+  const s = new THREE.Shape();
+  s.moveTo(x0 + bl, y0); s.lineTo(x1 - br, y0); s.quadraticCurveTo(x1, y0, x1, y0 + br);
+  s.lineTo(x1, y1 - tr); s.quadraticCurveTo(x1, y1, x1 - tr, y1);
+  s.lineTo(x0 + tl, y1); s.quadraticCurveTo(x0, y1, x0, y1 - tl);
+  s.lineTo(x0, y0 + bl); s.quadraticCurveTo(x0, y0, x0 + bl, y0);
+  return s;
+}
+function canvasTex(w, h, srgb = true) {
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const t = new THREE.CanvasTexture(c); if (srgb) t.encoding = THREE.sRGBEncoding; t.anisotropy = 8;
+  return { c, ctx: c.getContext("2d"), t };
+}
+const lin = hex => new THREE.Color(hex).convertSRGBToLinear();   // 색상 코드를 화면 그대로의 색으로
+
+/* ---------- 재질 ---------- */
+const metalMat  = new THREE.MeshPhysicalMaterial({ color: lin("#d9dde3"), metalness: 1, roughness: 0.14, clearcoat: 1, clearcoatRoughness: 0.05 });   // 커프 (티타늄)
+const linerMat  = new THREE.MeshStandardMaterial({ color: lin("#ece8e2"), roughness: 0.88, toneMapped: false });                                   // 의료용 실리콘 안감
+const glowMat   = new THREE.MeshBasicMaterial({ color: lin("#7fe3ff"), toneMapped: false });                                                          // 빛나는 라인
+const gemMat    = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0, metalness: 0, clearcoat: 1, transparent: true, opacity: 0.55, envMapIntensity: 2.2 });
+const baseMat   = new THREE.MeshPhysicalMaterial({ color: lin("#1d1f24"), metalness: 0.7, roughness: 0.28, clearcoat: 1, clearcoatRoughness: 0.12 });       // 케이스 받침
+const domeMat   = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.12, metalness: 0, clearcoat: 1, transparent: true, opacity: 0.22, depthWrite: false, envMapIntensity: 1.6 });
+const padMat    = new THREE.MeshBasicMaterial({ color: lin("#7fe3ff"), transparent: true, opacity: 0.35, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending });
+const meshDark  = new THREE.MeshStandardMaterial({ color: 0x0c0d10, roughness: 0.4, metalness: 0.3 });
+
+/* ---------- 미래형 케이스: 매끈한 받침 + 유리 돔 + 빛나는 라인 ---------- */
+const CASE_R = 0.6, CASE_BOT = -0.16;
+const caseG = new THREE.Group();
+(() => {
+  // 받침: 둥근 모서리의 원반 (옆에서 본 모양을 돌려서 만듦)
+  const prof = [new THREE.Vector2(0, CASE_BOT)];
+  prof.push(new THREE.Vector2(0.48, CASE_BOT));
+  for (let i = 0; i <= 12; i++) { const a = -Math.PI / 2 + (i / 12) * (Math.PI / 2); prof.push(new THREE.Vector2(0.48 + Math.cos(a) * 0.12, CASE_BOT + 0.12 + Math.sin(a) * 0.12)); }
+  prof.push(new THREE.Vector2(CASE_R, 0.0), new THREE.Vector2(0.575, 0.03), new THREE.Vector2(0, 0.03));
+  caseG.add(new THREE.Mesh(new THREE.LatheGeometry(prof, 96), baseMat));
+  // 유리 돔
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(0.55, 72, 24, 0, Math.PI * 2, 0, Math.PI / 2), domeMat);
+  dome.scale.y = 0.5; dome.position.y = 0.03; dome.renderOrder = 3; caseG.add(dome);
+  // 이음새의 빛나는 링
+  const seam = new THREE.Mesh(new THREE.TorusGeometry(0.588, 0.007, 10, 160), glowMat); seam.rotation.x = Math.PI / 2; seam.position.y = 0.012; caseG.add(seam);
+  // 자석 부양 패드 (커프가 이 위에 떠 있음)
+  [-0.2, 0.2].forEach(x => { const p = new THREE.Mesh(new THREE.CircleGeometry(0.13, 48), padMat); p.rotation.x = -Math.PI / 2; p.position.set(x, 0.034, 0); caseG.add(p); });
+})();
+// 앞면 배터리 표시 (빛나는 숫자)
+const BAT = canvasTex(512, 128);
+function drawBattery(n) {
+  const c = BAT.ctx; c.clearRect(0, 0, 512, 128);
+  c.shadowColor = "rgba(127,227,255,.9)"; c.shadowBlur = 14;
+  c.fillStyle = "#bff3ff"; c.font = "600 64px Inter, sans-serif"; c.textAlign = "center"; c.textBaseline = "middle";
+  c.fillText(n + "%", 300, 66);
+  c.strokeStyle = "#bff3ff"; c.lineWidth = 5; c.beginPath(); rrShapeCanvas(c, 96, 40, 92, 48, 10); c.stroke();
+  c.fillStyle = "#bff3ff"; c.fillRect(103, 47, 78 * n / 100, 34); c.fillRect(190, 56, 8, 16);
+  BAT.t.needsUpdate = true;
+}
+function rrShapeCanvas(c, x, y, w, h, r) { c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+drawBattery(100);
+const batPlane = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.085), new THREE.MeshBasicMaterial({ map: BAT.t, transparent: true, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending }));
+batPlane.position.set(0, -0.075, CASE_R - 0.005); caseG.add(batPlane);
+
+/* ---------- 피어싱형 이어 커프 (귀를 뚫지 않고 귓바퀴에 끼움) ---------- */
+const CR_ = 0.26, TUBE = 0.038, ARC = 1.55 * Math.PI, ROT = 1.225 * Math.PI;   // 틈(ARC 바깥쪽)이 왼쪽(-x)을 향함
+const ORB_A = ROT + ARC, BAR_A = ROT;                                         // 구슬 끝(위), 배럴 끝(아래)
+const ORB_P = V(Math.cos(ORB_A) * CR_, Math.sin(ORB_A) * CR_, 0);
+function makeCuff() {
+  const g = new THREE.Group();
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(CR_, TUBE, 32, 160, ARC), metalMat); ring.rotation.z = ROT; g.add(ring);
+  const liner = new THREE.Mesh(new THREE.TorusGeometry(CR_ - TUBE * 0.62, TUBE * 0.55, 18, 140, ARC * 0.92), linerMat); liner.rotation.z = ROT + ARC * 0.04; g.add(liner);
+  const line = new THREE.Mesh(new THREE.TorusGeometry(CR_ + TUBE * 0.92, 0.006, 8, 160, ARC * 0.7), glowMat); line.rotation.z = ROT + ARC * 0.15; g.add(line);   // 바깥 빛 라인
+  // 구슬 (스피커가 들어간 보석) — 귓구멍 앞에 위치
+  const orb = new THREE.Group(); orb.position.copy(ORB_P); g.add(orb);
+  orb.add(new THREE.Mesh(new THREE.SphereGeometry(0.095, 48, 32), metalMat));
+  const halo = new THREE.Mesh(new THREE.TorusGeometry(0.098, 0.008, 12, 72), glowMat); orb.add(halo);
+  const gem = new THREE.Mesh(new THREE.SphereGeometry(0.058, 40, 24), gemMat); gem.position.z = 0.062; orb.add(gem);
+  const grill = new THREE.Mesh(new THREE.CircleGeometry(0.035, 32), meshDark); grill.position.set(-0.05, -0.03, -0.075); grill.rotation.y = Math.PI + 0.6; orb.add(grill);
+  // 배럴 (배터리) — 귀 뒤쪽에 위치
+  const bar = new THREE.Group(); bar.position.set(Math.cos(BAR_A) * CR_, Math.sin(BAR_A) * CR_, 0);
+  bar.quaternion.setFromUnitVectors(V(0, 1, 0), V(-Math.sin(BAR_A), Math.cos(BAR_A), 0)); g.add(bar);
+  bar.add(new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.052, 0.16, 36), metalMat));
+  [-0.08, 0.08].forEach(y => { const cap = new THREE.Mesh(new THREE.SphereGeometry(0.052, 28, 14), metalMat); cap.position.y = y; bar.add(cap); });
+  const band = new THREE.Mesh(new THREE.TorusGeometry(0.054, 0.006, 8, 48), glowMat); band.rotation.x = Math.PI / 2; bar.add(band);
+  return g;
+}
+const budsG = new THREE.Group();
+const budUp = makeCuff(), budLo = makeCuff();
+const BUD_BASE = { up: { p: V(-0.2, 0.86, -0.02), r: [0.55, -0.45, 0.5] }, lo: { p: V(0.26, 0.52, 0.06), r: [0.12, 0.3, -0.15] } };
+budsG.add(budUp, budLo);
+
+const rig = new THREE.Group(); scene.add(rig);
+rig.add(caseG, budsG);
+
+/* ---------- 귀 그림 (01: 귀를 뚫지 않고 끼우는 모습) ---------- */
+const EAR = canvasTex(512, 740);
+function drawEar() {
+  const c = EAR.ctx, w = 512, h = 740, P = (u, v) => [u * w, v * h];
+  c.clearRect(0, 0, w, h);
+  const outer = () => {
+    c.beginPath(); c.moveTo(...P(0.34, 0.12));
+    c.bezierCurveTo(...P(0.42, 0.02), ...P(0.72, 0.0), ...P(0.84, 0.14));
+    c.bezierCurveTo(...P(0.96, 0.27), ...P(0.95, 0.45), ...P(0.84, 0.58));
+    c.bezierCurveTo(...P(0.77, 0.68), ...P(0.7, 0.72), ...P(0.68, 0.82));
+    c.bezierCurveTo(...P(0.66, 0.95), ...P(0.5, 0.99), ...P(0.44, 0.9));
+    c.bezierCurveTo(...P(0.39, 0.83), ...P(0.42, 0.74), ...P(0.4, 0.68));
+    c.bezierCurveTo(...P(0.36, 0.62), ...P(0.3, 0.6), ...P(0.3, 0.54));
+    c.bezierCurveTo(...P(0.3, 0.4), ...P(0.26, 0.24), ...P(0.34, 0.12)); c.closePath();
+  };
+  const g = c.createLinearGradient(0, 0, w, h); g.addColorStop(0, "#f6dfd3"); g.addColorStop(1, "#e7bfae");
+  outer(); c.fillStyle = g; c.fill();
+  c.save(); outer(); c.clip();   // 안쪽 그림자
+  const sh = c.createRadialGradient(...P(0.5, 0.5), 20, ...P(0.5, 0.5), 300); sh.addColorStop(0, "rgba(180,110,90,.28)"); sh.addColorStop(1, "rgba(180,110,90,0)");
+  c.fillStyle = sh; c.fillRect(0, 0, w, h); c.restore();
+  outer(); c.strokeStyle = "#cf9f8b"; c.lineWidth = 4; c.stroke();
+  c.lineCap = "round";
+  c.strokeStyle = "rgba(190,125,105,.75)"; c.lineWidth = 7;   // 귓바퀴 안쪽 접힌 선
+  c.beginPath(); c.moveTo(...P(0.4, 0.17)); c.bezierCurveTo(...P(0.6, 0.06), ...P(0.86, 0.18), ...P(0.86, 0.42)); c.stroke();
+  c.lineWidth = 6; c.beginPath(); c.moveTo(...P(0.48, 0.24)); c.bezierCurveTo(...P(0.66, 0.18), ...P(0.8, 0.32), ...P(0.72, 0.52)); c.stroke();
+  c.fillStyle = "rgba(170,100,85,.35)"; c.beginPath(); c.ellipse(...P(0.52, 0.5), 66, 62, -0.3, 0, Math.PI * 2); c.fill();   // 귓구멍 주변
+  c.fillStyle = "rgba(120,60,50,.55)"; c.beginPath(); c.ellipse(...P(0.43, 0.52), 20, 26, 0, 0, Math.PI * 2); c.fill();
+  // 끼우는 위치 표시 (점선 원)
+  c.setLineDash([8, 8]); c.strokeStyle = "rgba(47,91,255,.75)"; c.lineWidth = 4;
+  c.beginPath(); c.arc(...P(0.925, 0.36), 34, 0, Math.PI * 2); c.stroke(); c.setLineDash([]);
+  EAR.t.needsUpdate = true;
+}
+drawEar();
+const earMat = new THREE.MeshBasicMaterial({ map: EAR.t, transparent: true, opacity: 0, depthWrite: false, toneMapped: false });
+const EAR_C = V(0, 0.75, -0.06), EAR_W = 1.3, EAR_H = 1.88;
+const ear = new THREE.Mesh(new THREE.PlaneGeometry(EAR_W, EAR_H), earMat); ear.position.copy(EAR_C); ear.renderOrder = 1; rig.add(ear);
+const EAR_CLIP = V((0.925 - 0.5) * EAR_W, EAR_C.y + (0.5 - 0.36) * EAR_H, EAR_C.z);   // 귓바퀴 바깥 가장자리
+// 끼웠을 때: 링이 귀 가장자리를 감싸고, 구슬은 귀 앞쪽, 배럴은 귀 뒤쪽
+const EAR_SCALE = 0.75;   // 귀에 낄 때 실제 귀걸이 크기에 맞게 조금 작게
+const EAR_RING = EAR_CLIP.clone().add(V(CR_ * 0.72 * EAR_SCALE, 0, 0));
+const qEar = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI / 2 - 0.45, -0.25, 0.2));
+const clickRing = new THREE.Mesh(new THREE.RingGeometry(0.06, 0.072, 48), new THREE.MeshBasicMaterial({ color: 0x2f5bff, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }));
+clickRing.position.copy(EAR_CLIP).add(V(0, 0, 0.02)); rig.add(clickRing);
+const AWAY_UP = V(1.2, 1.55, -0.3);   // 귀 장면에서 위쪽 커프는 비켜남
+
+/* ---------- 노이즈 캔슬링 링 (바깥 소음을 밀어내는 파동) ---------- */
+const ncRings = [0, 1, 2, 3].map(() => {
+  const m = new THREE.Mesh(new THREE.RingGeometry(0.98, 1.0, 96), new THREE.MeshBasicMaterial({ color: 0xbfe3ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }));
+  scene.add(m); return m;
+});
+
+/* ---------- 손가락 (터치 조작 연출) ---------- */
+const finger = new THREE.Group(); rig.add(finger);
+const skin = new THREE.MeshPhysicalMaterial({ color: lin("#f1ddd0"), roughness: 0.5, clearcoat: 0.3, transparent: true, opacity: 0, toneMapped: false });
+const fBody = new THREE.CylinderGeometry(0.03, 0.036, 0.36, 28, 1, true); fBody.translate(0, -0.18, 0);
+finger.add(new THREE.Mesh(fBody, skin), new THREE.Mesh(new THREE.SphereGeometry(0.03, 28, 16), skin));
+const FDIR = V(0.55, -0.15, 0.8).normalize();
+finger.quaternion.setFromUnitVectors(V(0, -1, 0), FDIR);
+const touchRing = new THREE.Mesh(new THREE.RingGeometry(0.03, 0.036, 48), new THREE.MeshBasicMaterial({ color: 0xa8e6ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }));
+rig.add(touchRing);
+
+// 바닥 그림자
+const SC = document.createElement("canvas"); SC.width = SC.height = 256;
+(() => { const c = SC.getContext("2d"), g = c.createRadialGradient(128, 128, 0, 128, 128, 128);
+  g.addColorStop(0, "rgba(40,25,15,.5)"); g.addColorStop(0.5, "rgba(40,25,15,.16)"); g.addColorStop(1, "rgba(0,0,0,0)");
+  c.fillStyle = g; c.fillRect(0, 0, 256, 256); })();
+const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 0.9), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(SC), transparent: true, depthWrite: false }));
+shadow.rotation.x = -Math.PI / 2; scene.add(shadow);
+
+/* ---------- 색상 적용 (색상 코드를 정확한 화면 색으로 변환해서 사용) ---------- */
+const TGT = { metal: lin("#d9dde3"), base: lin("#1d1f24"), glow: lin("#7fe3ff") };
+function setBudsLook(c) { TGT.metal = lin(c.hex); TGT.base = lin(c.base); TGT.glow = lin(c.glow); }
+function lerpLook(k) { metalMat.color.lerp(TGT.metal, k); baseMat.color.lerp(TGT.base, k); glowMat.color.lerp(TGT.glow, k); padMat.color.copy(glowMat.color); }
+
+/* =====================================================================
+   4. 스크롤 키프레임
+   ===================================================================== */
+let KEYS = [], M = false;
+const cur = {};
+function at(id, a, off = 0) {
+  const el = document.querySelector(id), r = el.getBoundingClientRect();
+  return r.top + window.scrollY + a * Math.max(1, r.height - window.innerHeight) + off * window.innerHeight;
+}
+function buildKeys() {
+  M = window.innerWidth < 820;
+  const X = M ? 0 : 1.05, Y = M ? 0.45 : 0, k = M ? 0.62 : 1;
+  const raw = [
+    // HERO: 미래형 케이스 위에 피어싱 커프 두 개가 떠 있음 (붐비는 거리)
+    [0, { px: X, py: Y - 0.35 * k, rx: 0.12, ry: -0.42, rz: 0, sc: 1.3 * k, spread: 0, light: 0, nc: 0, crowd: 1, ctrl: 0, lift: 0, sh: 0.32, op: 1, tumble: 0, idle: 1, orbit: 0, ear: 0, fit: 0 }],
+    // 01 귀를 뚫지 않는 피어싱: 귀 그림이 나타나고 커프가 귓바퀴에 딸깍 끼워짐
+    [at("#b1", 0.05), { ry: -0.3 }],
+    [at("#b1", 0.38), { ear: 1, idle: 0, ry: -0.32, rx: 0.06, py: Y - 0.6 * k, sc: 1.2 * k }],
+    [at("#b1", 0.72), { fit: 1, ry: -0.55 }],
+    [at("#b1", 0.92), { ry: -0.2 }],
+    // 02 가벼움: 커프가 떠올라 공중제비
+    [at("#b2", 0.1), { ear: 0, px: -X, py: Y - 0.35 * k, ry: -0.3, rx: 0.12, sc: 1.3 * k, idle: 1 }],
+    [at("#b2", 0.5), { spread: 1, light: 1, ry: 0.3, py: Y - 0.45 * k, tumble: 0.55 }],
+    [at("#b2", 0.9), { ry: 0.55, tumble: 1 }],
+    // 03 노이즈 캔슬링: 거리가 어두워지고 피어싱만 남음 (한 바퀴)
+    [at("#b3", 0.1), { px: X, py: Y - 0.35 * k, ry: -0.3, spread: 0 }],
+    [at("#b3", 0.25), { nc: 0, crowd: 1 }],
+    [at("#b3", 0.65), { nc: 1, crowd: 0, ry: 2 * Math.PI + 0.15, sc: 1.4 * k }],
+    [at("#b3", 0.92), { ry: 2 * Math.PI + 0.3 }],
+    // 04 터치 조작: 아래 커프를 크게 확대 (확대되며 한 바퀴)
+    [at("#b4", 0.12), { px: M ? -0.26 * 2.4 * k : -X * 0.55 - 0.26 * 2.4, py: (M ? 0.3 : -0.05) - 0.52 * 2.4 * k, rx: 0.04, ry: 4 * Math.PI - 0.12, sc: 2.4 * k, ctrl: 0, idle: 0 }],
+    [at("#b4", 0.85), { ctrl: 1 }],
+    [at("#b4", 0.97), { idle: 0.6 }],
+    // 색상·가격: 커프가 케이스 주위를 공전
+    [at("#bshop", 0, -0.1), { px: M ? 0 : -1.12, py: M ? 0.15 : -0.3, rx: 0.16, ry: 4 * Math.PI - 0.5, sc: M ? 0.85 : 1.15, nc: 0, crowd: 0, ctrl: 1, spread: 0, idle: 1, orbit: 1 }],
+    [at("#bshop", 1), { ry: 4 * Math.PI - 0.1 }],
+    [at("#bpair", 0, -0.9), { op: 1 }],
+    [at("#bpair", 0, -0.3), { op: 0, lift: 0.4 }]
+  ];
+  let prev = {};
+  KEYS = raw.map(([y, s]) => { prev = Object.assign({}, prev, s); return { y, s: prev }; });
+  for (let i = 1; i < KEYS.length; i++) if (KEYS[i].y <= KEYS[i - 1].y) KEYS[i].y = KEYS[i - 1].y + 1;
+}
+function sample(y) {
+  if (y <= KEYS[0].y) return KEYS[0].s;
+  const last = KEYS[KEYS.length - 1]; if (y >= last.y) return last.s;
+  let i = 0; while (y >= KEYS[i + 1].y) i++;
+  const a = KEYS[i], b = KEYS[i + 1], t = ease((y - a.y) / (b.y - a.y)), o = {};
+  for (const key in a.s) o[key] = a.s[key] + (b.s[key] - a.s[key]) * t;
+  return o;
+}
+
+/* =====================================================================
+   5. 터치 조작 시나리오 (ctrl 0 → 1)
+   손가락 위치: [진행도, 기둥 위치(0 아래 ~ 1 위), 떨어진 정도(0 = 닿음)]
+   ===================================================================== */
+const FK = [[0, 0, 1], [0.16, 0, 0], [0.22, 0, 0], [0.3, 0.1, 0.35], [0.36, 0.15, 0], [0.62, 0.75, 0], [0.68, 0.5, 0.35],
+            [0.75, 0, 0], [0.785, 0, 0.22], [0.82, 0, 0], [0.87, 0, 0.3], [1, 0, 1]];
+// s = 0: 구슬 앞면을 톡 / s > 0: 링을 따라 아래로 쓸기
+function cuffContact(s) {
+  const ring = a => V(Math.cos(a) * CR_, Math.sin(a) * CR_, TUBE + 0.004);
+  const aOf = s => ORB_A - 0.12 * ARC - (s - 0.12) * ARC * 0.85;
+  if (s >= 0.12) return ring(aOf(s));
+  return ORB_P.clone().add(V(0, 0, 0.1)).lerp(ring(aOf(0.12)), s / 0.12);
+}
+function fingerAt(c) {
+  let i = 0; while (i < FK.length - 2 && c > FK[i + 1][0]) i++;
+  const a = FK[i], b = FK[i + 1], t = ease(clamp01((c - a[0]) / (b[0] - a[0])));
+  return { s: a[1] + (b[1] - a[1]) * t, away: a[2] + (b[2] - a[2]) * t };
+}
+const TRACKS = [["Midnight Drive", "Lofi Seoul", "linear-gradient(135deg,#ff9a8b,#7c6cff)"], ["Busan Sunset", "BK Sessions", "linear-gradient(135deg,#ffcf7a,#ff6f61)"]];
+let npKey = "";
+function updatePlayer(c) {
+  const paused = c >= 0.19 && c < 0.84;
+  const track = c >= 0.85 ? 1 : 0;
+  const vol = Math.round(40 + 45 * clamp01((c - 0.36) / 0.26));
+  const step = c < 0.31 ? 1 : c < 0.69 ? 2 : 3;
+  const key = `${paused}|${track}|${vol}|${step}`;
+  if (key === npKey) return; npKey = key;
+  $("npState").textContent = paused ? "⏸" : "▶"; $("npState").classList.toggle("paused", paused);
+  $("npTitle").textContent = TRACKS[track][0]; $("npArtist").textContent = TRACKS[track][1]; $("npArt").style.background = TRACKS[track][2];
+  $("npVol").style.width = vol + "%"; $("npVolTxt").textContent = vol + "%";
+  ["g1", "g2", "g3"].forEach((id, i) => $(id).classList.toggle("on", i + 1 === step && c > 0.02 && c < 0.98));
+}
+
+/* =====================================================================
+   6. 글자 페이드 & 미터
+   ===================================================================== */
+const heroCopy = $("heroCopy");
+const feats = ["#b1", "#b2", "#b3", "#b4"].map(id => { const sec = document.querySelector(id); return { sec, copy: sec.querySelector(".copy") }; });
+const secProgress = (sec, y) => (y - sec.offsetTop) / Math.max(1, sec.offsetHeight - window.innerHeight);
+function updateText(y) {
+  const ho = clamp01(1 - (secProgress($("bhero"), y) - 0.25) / 0.45);
+  heroCopy.style.opacity = ho; heroCopy.style.transform = `translateY(${(1 - ho) * -40}px)`;
+  feats.forEach(f => {
+    const p = secProgress(f.sec, y), o = clamp01(Math.min((p + 0.02) / 0.16, (1.02 - p) / 0.14));
+    f.copy.style.opacity = o; f.copy.style.transform = `translateY(${(1 - o) * 40}px)`;
+  });
+  const pN = 1.8 - cur.fit * 1.5;
+  $("m0").textContent = pN.toFixed(1) + "N"; $("b0b").style.transform = `scaleX(${pN / 1.8})`;
+  ["c1", "c2", "c3"].forEach((id, i) => $(id).classList.toggle("on", cur.fit > 0.25 + i * 0.25));
+  $("m1").textContent = (5.4 - cur.light * 2.2).toFixed(1) + "g"; $("b1b").style.transform = `scaleX(${(5.4 - cur.light * 2.2) / 5.4})`;
+  const db = Math.round(78 - cur.nc * 75);
+  $("m2").textContent = db + "dB"; $("b2b").style.transform = `scaleX(${db / 78})`;
+  const st = cur.nc > 0.5 ? "2" : "0", ind = $("ncInd");
+  if (ind.dataset.st !== st) { ind.dataset.st = st; $("ncTxt").textContent = st === "2" ? "노이즈 캔슬링 켜짐 · 음악만 들려요" : "노이즈 캔슬링 꺼짐"; }
+  updatePlayer(cur.ctrl);
+}
+
+/* =====================================================================
+   7. 마우스로 끌어서 돌려보기 (맨 처음 화면 + 색상 섹션)
+   ===================================================================== */
+const drag = { on: false, x: 0, y: 0, yaw: 0, pitch: 0, vy: 0, flip: 0 };
+function inDragZone(y) {
+  const vh = window.innerHeight, hero = $("bhero"), shop = $("bshop");
+  return y < hero.offsetTop + hero.offsetHeight - vh * 0.6 ||
+         (y > shop.offsetTop - vh * 0.3 && y < shop.offsetTop + shop.offsetHeight - vh * 0.5);
+}
+// 마우스: 끌면 모든 방향으로 회전
+// 터치(휴대폰·태블릿): 좌우로 밀면 회전, 위아래로 밀면 그대로 스크롤, 두 번 탭하면 뒤집기
+const TOUCH_UI = !!(window.matchMedia && window.matchMedia("(hover: none)").matches);
+let lastDragEnd = -1e9, lastTap = 0;
+function hideHint() { const h = $("dragHint"); if (h) { h.style.transition = "opacity .4s"; h.style.opacity = 0; } }
+if (TOUCH_UI && $("dragHint")) $("dragHint").textContent = "↔ 좌우로 밀어서 돌려보세요 · 두 번 탭하면 뒤집기";
+window.addEventListener("pointerdown", e => {
+  if (e.pointerType === "mouse" && e.button !== 0) return;
+  if (e.target.closest("a, button, input, label, select, textarea, nav, .shop-panel, .modal")) return;
+  if (!inDragZone(window.scrollY)) return;
+  drag.on = true; drag.touch = e.pointerType !== "mouse";
+  drag.x = drag.sx = e.clientX; drag.y = drag.sy = e.clientY; drag.t0 = performance.now(); drag.vy = 0; drag.vp = 0;
+  if (!drag.touch) { document.body.classList.add("dragging"); e.preventDefault(); hideHint(); }
+});
+window.addEventListener("pointermove", e => {
+  if (!drag.on) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY;
+  drag.vy = dx * (drag.touch ? 5.4 / Math.max(320, window.innerWidth) : 0.012); drag.yaw += drag.vy;   // 터치: 화면 폭만큼 밀면 약 한 바퀴
+  if (!drag.touch) drag.pitch = Math.max(-1.25, Math.min(1.25, drag.pitch + dy * 0.008));
+  else if (Math.abs(e.clientX - drag.sx) > 24) hideHint();
+});
+const endDrag = e => {
+  if (!drag.on) return;
+  drag.on = false; lastDragEnd = performance.now(); drag.vy *= 0.3; document.body.classList.remove("dragging");
+  if (drag.touch && e && e.type === "pointerup" && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 12 && performance.now() - drag.t0 < 300) {
+    const now = performance.now();   // 두 번 탭 → 반 바퀴 뒤집기
+    if (now - lastTap < 350) { drag.flip += Math.PI; lastTap = 0; hideHint(); } else lastTap = now;
+  }
+};
+window.addEventListener("pointerup", endDrag); window.addEventListener("pointercancel", endDrag); window.addEventListener("blur", () => endDrag());
+function updateDrag(dt) {
+  const zone = inDragZone(window.scrollY);
+  document.body.classList.toggle("can-drag", zone);
+  if (Math.abs(drag.flip) > 0.001) { const st = drag.flip * (1 - Math.exp(-dt * 6)); drag.yaw += st; drag.flip -= st; }
+  if (drag.on) return;
+  const f = Math.exp(-dt * 3.2); drag.yaw += drag.vy; drag.vy *= f;
+  if (zone && performance.now() - lastDragEnd > 2500) drag.yaw += dt * 0.32;   // 자동 회전 (턴테이블)
+  if (!zone) {
+    const T2 = Math.PI * 2; drag.yaw = ((drag.yaw + Math.PI) % T2 + T2) % T2 - Math.PI;
+    const k = 1 - Math.exp(-dt * 3); drag.yaw -= drag.yaw * k; drag.pitch -= drag.pitch * k; drag.vy = 0;
+  }
+}
+
+/* =====================================================================
+   8. 렌더 루프
+   ===================================================================== */
+function resize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.fov = w < 820 ? 34 : 30; camera.updateProjectionMatrix();
+  sizeCrowd(); buildKeys();
+}
+window.addEventListener("resize", resize);
+const dimEl = $("dim"), tmpV = V(0, 0, 0), budCenter = V(0.03, 0.68, 0);
+let spinA = 0, orbitA = 0;
+let lastT = performance.now();
+function loop(now) {
+  const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
+  if (lenis) lenis.raf(now);
+  updateDrag(dt);
+  const y = window.scrollY, tgt = sample(y), k = 1 - Math.exp(-dt * 5.5);
+  for (const key in tgt) cur[key] += (tgt[key] - cur[key]) * k;
+  lerpLook(1 - Math.exp(-dt * 6));
+  const t = now * 0.001;
+
+  // 상자와 이어폰 배치
+  rig.position.set(cur.px, cur.py + cur.lift + Math.sin(t * 1.1) * 0.015, 0);
+  rig.rotation.set(cur.rx + drag.pitch, cur.ry + drag.yaw, cur.rz);
+  rig.scale.setScalar(cur.sc);
+  const sp = cur.spread, fl = 0.035 + sp * 0.06;
+  // 제자리 회전 각도 (idle이 낮아지면 정면 각도로 돌아옴)
+  spinA += dt * 0.9 * cur.idle;
+  if (cur.idle < 0.3) { const T2 = Math.PI * 2; spinA = ((spinA + Math.PI) % T2 + T2) % T2 - Math.PI; spinA -= spinA * (1 - Math.exp(-dt * 3)); }
+  orbitA += dt * 0.55 * cur.orbit;
+  [[budUp, BUD_BASE.up, V(-0.22, 0.32, 0.05), 1, 0], [budLo, BUD_BASE.lo, V(0.24, 0.12, 0.08), -1, Math.PI]].forEach(([b, base, off, d, ph]) => {
+    b.position.copy(base.p).addScaledVector(off, sp);
+    // 색상 섹션: 케이스 주위를 빙글빙글 공전
+    const oa = orbitA + ph, o = cur.orbit;
+    b.position.x += (Math.cos(oa) * 0.78 - b.position.x) * o;
+    b.position.z += (Math.sin(oa) * 0.55 - b.position.z) * o;
+    b.position.y += (0.42 + Math.sin(oa * 2) * 0.08 - b.position.y) * o * 0.6;
+    b.position.y += Math.sin(t * 1.3 + d) * fl;
+    b.rotation.set(base.r[0] + Math.sin(t * 0.9 + d) * 0.08 * (1 + sp * 3), base.r[1] + sp * d * Math.sin(t * 0.6) * 0.6, base.r[2] + Math.sin(t * 0.7) * 0.06 * (1 + sp * 4));
+    b.rotateY(spinA * d);                                   // 기둥을 축으로 빙글
+    if (d > 0) b.rotateX(cur.tumble * Math.PI * 2);         // 01: 위 이어폰은 앞으로 공중제비
+    else b.rotateZ(-cur.tumble * Math.PI * 2);              // 01: 아래 이어폰은 옆으로 한 바퀴
+  });
+  // 01: 귀에 끼우는 장면 — 위쪽 커프는 비켜나고, 아래 커프가 귓바퀴에 딸깍
+  const e = clamp01(cur.ear), fit = clamp01(cur.fit), snap = smooth(0, 0.5, fit);
+  caseG.position.y = -sp * 0.12 - e * 1.9;
+  earMat.opacity = e;
+  budLo.scale.setScalar(1);
+  if (e > 0.001) {
+    const target = EAR_RING.clone().add(V(0.38 * (1 - snap), 0.12 * (1 - snap), 0.15 * (1 - snap)));
+    budLo.position.lerp(target, e); budLo.quaternion.slerp(qEar, e); budLo.scale.setScalar(1 - (1 - EAR_SCALE) * e);
+    budUp.position.lerp(AWAY_UP, e);
+  }
+  const cp = clamp01((fit - 0.45) / 0.45);
+  clickRing.quaternion.copy(rig.quaternion).invert().multiply(camera.quaternion);
+  clickRing.scale.setScalar(1 + cp * 3); clickRing.material.opacity = e * (cp > 0 && cp < 1 ? 1 - cp : 0);
+
+  // 붐비는 거리 ↔ 고요함
+  const crowdAmt = clamp01(cur.crowd);
+  if (crowdAmt > 0.01) {
+    drawCrowd(t, crowdAmt);
+    crowdC.style.opacity = crowdAmt.toFixed(3);
+    crowdC.style.filter = `blur(${((1 - crowdAmt) * 10).toFixed(1)}px) saturate(${(0.6 + crowdAmt * 0.4).toFixed(2)})`;
+    crowdC.style.visibility = "visible";
+  } else crowdC.style.visibility = "hidden";
+  const nc = clamp01(cur.nc);
+  rig.updateMatrixWorld(true);
+  tmpV.copy(budCenter).applyMatrix4(rig.matrixWorld);
+  const scr = tmpV.clone().project(camera);
+  dimEl.style.setProperty("--sx", ((scr.x * 0.5 + 0.5) * 100).toFixed(1) + "%");
+  dimEl.style.setProperty("--sy", ((-scr.y * 0.5 + 0.5) * 100).toFixed(1) + "%");
+  dimEl.style.opacity = nc.toFixed(3);
+  if ((nc > 0.5) !== document.body.classList.contains("dark")) document.body.classList.toggle("dark", nc > 0.5);
+  ncRings.forEach((m, i) => {   // 바깥에서 안으로 모여드는 파동 = 소음을 지우는 반대 파동
+    const ph = (t * 0.45 + i / 4) % 1;
+    m.position.copy(tmpV); m.quaternion.copy(camera.quaternion);
+    m.scale.setScalar(cur.sc * (1.6 - ph * 1.25));
+    m.material.opacity = nc * Math.sin(ph * Math.PI) * 0.35;
+  });
+
+  // 터치 조작
+  const c = cur.ctrl, fv = smooth(0, 0.05, c) * (1 - smooth(0.93, 1, c));
+  skin.opacity = fv; finger.visible = fv > 0.01;
+  if (finger.visible) {
+    const f = fingerAt(c);
+    budLo.updateMatrix(); budsG.updateMatrix();
+    const contact = cuffContact(f.s).applyMatrix4(budLo.matrix).applyMatrix4(budsG.matrix);
+    finger.position.copy(contact).addScaledVector(FDIR, 0.03 + f.away * 0.4);
+    const touching = f.away < 0.04;
+    touchRing.position.copy(contact).addScaledVector(FDIR, 0.01);
+    touchRing.quaternion.copy(rig.quaternion).invert().multiply(camera.quaternion);
+    touchRing.scale.setScalar(touching ? 1 + ((t * 2.5) % 1) * 2.5 : 1);
+    touchRing.material.opacity = touching ? (1 - (t * 2.5) % 1) * fv : 0;
+  } else touchRing.material.opacity = 0;
+
+  shadow.position.set(cur.px, cur.py + (CASE_BOT - 0.02 - sp * 0.12) * cur.sc, 0);
+  shadow.scale.setScalar(cur.sc * 1.2); shadow.material.opacity = cur.sh * cur.op * (1 - nc * 0.7) * (1 - e) * 2.2;
+  canvas.style.opacity = cur.op;
+  updateText(y);
+  if (cur.op > 0.01) renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+
+/* =====================================================================
+   9. 서버 통신 · 색상 · 주문
+   ===================================================================== */
+async function apiFetch(url, options = {}) {
+  const opt = { credentials: "same-origin", ...options, headers: { ...(options.headers || {}) } };
+  if (opt.body !== undefined) { opt.headers["Content-Type"] = "application/json"; opt.body = JSON.stringify(opt.body); }
+  let res;
+  try { res = await fetch(url, opt); } catch { throw new Error("서버에 연결할 수 없어요. 서버가 실행 중인지 확인해 주세요."); }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) { const err = new Error(data.error || "요청을 처리하지 못했어요."); err.status = res.status; throw err; }
+  return data;
+}
+const esc = s => String(s).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+let me = null, firstOrderDiscount = false;
+function priceOf(ci, oi) { return OPTIONS[oi].price + BCOLORS[ci].extra; }
+function quote() {
+  const unit = priceOf(sel.color, sel.opt), discount = me && firstOrderDiscount ? Math.round(unit * 0.05 / 10) * 10 : 0;
+  return { unit, discount, total: unit - discount };
+}
+function buildShop() {
+  $("swatches").innerHTML = "";
+  BCOLORS.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.className = "sw"; b.style.background = `radial-gradient(circle at 34% 30%, #ffffff 0%, ${c.hex} 40%, ${c.base} 100%)`; b.style.boxShadow = `0 0 0 2px ${c.glow}55`; b.setAttribute("aria-label", c.name);
+    if (c.extra) b.innerHTML = '<span class="ltd">LTD</span>';
+    b.addEventListener("click", () => { sel.color = i; drag.vy += 0.35; refreshShop(); });
+    $("swatches").appendChild(b);
+  });
+  $("options").innerHTML = OPTIONS.map((o, i) => `<button class="st" data-i="${i}"><b>${esc(o.name)}</b><span>${won(o.price)}</span></button>`).join("");
+  $("options").querySelectorAll(".st").forEach(b => b.addEventListener("click", () => { sel.opt = +b.dataset.i; refreshShop(); }));
+  $("ptHead").innerHTML = `<tr><th>색상</th>${OPTIONS.map(o => `<th>${esc(o.name)}</th>`).join("")}</tr>`;
+}
+function refreshShop() {
+  const c = BCOLORS[sel.color], qt = quote();
+  document.querySelectorAll("#swatches .sw").forEach((b, i) => b.classList.toggle("on", i === sel.color));
+  document.querySelectorAll("#options .st").forEach((b, i) => b.classList.toggle("on", i === sel.opt));
+  $("colorName").textContent = c.name;
+  $("price").textContent = won(qt.total);
+  $("priceSub").textContent = qt.discount ? `첫 구매 5% 할인 적용 (정가 ${won(qt.unit)})` : `월 ${Math.round(qt.unit / 6).toLocaleString("ko-KR")}원 (6개월 무이자)`;
+  setBudsLook(c);
+  $("ptable").innerHTML = BCOLORS.map((cc, i) =>
+    `<tr class="${i === sel.color ? "on" : ""}"><td><span class="dot" style="background:${cc.hex}"></span>${esc(cc.name)}</td>` +
+    OPTIONS.map((_, oi) => `<td>${won(priceOf(i, oi))}</td>`).join("") + "</tr>").join("");
+}
+function setErr(id, msg) { const f = $(id).closest(".f"); f.classList.toggle("bad", !!msg); f.querySelector(".msg").textContent = msg || ""; return !msg; }
+function setMe(data) { me = data.customer || null; firstOrderDiscount = !!data.firstOrderDiscount; refreshShop(); if (me) loadMyOrders(); else $("myOrders").style.display = "none"; }
+const modal = $("orderModal");
+function showModalStep(step) {
+  $("loginForm").style.display = step === "login" ? "block" : "none";
+  $("orderForm").style.display = step === "order" ? "block" : "none";
+  $("orderDone").style.display = step === "done" ? "block" : "none";
+  $("orderTitle").textContent = step === "login" ? "로그인" : step === "order" ? "주문서" : "주문 완료";
+}
+function fillOrder() {
+  const c = BCOLORS[sel.color], o = OPTIONS[sel.opt], qt = quote();
+  $("sumName").textContent = `BK pierce · ${c.name} · ${o.name}`; $("sumUnit").textContent = won(qt.unit);
+  $("sumDiscRow").style.display = qt.discount ? "flex" : "none"; $("sumDisc").textContent = "−" + won(qt.discount);
+  $("sumTotal").textContent = won(qt.total);
+  if (!$("oRecipient").value) $("oRecipient").value = me.name;
+  if (!$("oPhone").value) $("oPhone").value = me.phone;
+  $("whoami").innerHTML = `${esc(me.name)}님으로 로그인됨 · <a id="logoutLink">로그아웃</a>`;
+  $("logoutLink").onclick = async () => { try { await apiFetch("/api/logout", { method: "POST", body: {} }); } catch {} setMe({ customer: null }); showModalStep("login"); };
+  $("orderErr").textContent = "";
+}
+function openOrder() {
+  modal.classList.add("open"); if (lenis) lenis.stop();
+  if (me) { fillOrder(); showModalStep("order"); setTimeout(() => $("oZip").focus(), 50); }
+  else { showModalStep("login"); setTimeout(() => $("lemail").focus(), 50); }
+}
+function closeOrder() { modal.classList.remove("open"); if (lenis) lenis.start(); }
+modal.addEventListener("click", e => { if (e.target === modal || e.target.closest("[data-close]")) closeOrder(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && modal.classList.contains("open")) closeOrder(); });
+$("orderBtn").addEventListener("click", openOrder);
+$("loginForm").addEventListener("submit", async e => {
+  e.preventDefault(); $("loginErr").textContent = "";
+  const email = $("lemail").value.trim(), password = $("lpw").value;
+  if (!email || !password) { $("loginErr").textContent = "이메일과 비밀번호를 입력해 주세요."; return; }
+  const btn = $("loginForm").querySelector("button[type=submit]"); btn.disabled = true;
+  try { setMe(await apiFetch("/api/login", { method: "POST", body: { email, password } })); $("loginForm").reset(); fillOrder(); showModalStep("order"); }
+  catch (err) { $("loginErr").textContent = err.message; } finally { btn.disabled = false; }
+});
+$("orderForm").addEventListener("submit", async e => {
+  e.preventDefault(); $("orderErr").textContent = "";
+  const recipient = $("oRecipient").value.trim(), recipientPhone = $("oPhone").value.replace(/[^0-9]/g, "");
+  const zipcode = $("oZip").value.replace(/[^0-9]/g, ""), address = $("oAddr").value.trim(), memo = $("oMemo").value.trim();
+  let ok = true;
+  ok = setErr("oRecipient", recipient ? "" : "받는 분 이름을 입력해 주세요.") && ok;
+  ok = setErr("oPhone", /^01[0-9]{8,9}$/.test(recipientPhone) ? "" : "연락처를 확인해 주세요.") && ok;
+  ok = setErr("oZip", zipcode.length === 5 ? "" : "우편번호 5자리를 입력해 주세요.") && ok;
+  ok = setErr("oAddr", address.length >= 5 ? "" : "주소를 입력해 주세요.") && ok;
+  if (!ok) return;
+  const btn = $("orderSubmit"); btn.disabled = true; btn.textContent = "접수 중...";
+  try {
+    const { order } = await apiFetch("/api/orders", { method: "POST", body: { product: "pierce", colorId: BCOLORS[sel.color].id, optionId: OPTIONS[sel.opt].id, recipient, recipientPhone, zipcode, address, memo } });
+    $("doneNo").textContent = order.order_no; $("doneTotal").textContent = won(order.total);
+    showModalStep("done"); firstOrderDiscount = false; refreshShop(); loadMyOrders();
+  } catch (err) { $("orderErr").textContent = err.message; if (err.status === 401) { setMe({ customer: null }); showModalStep("login"); } }
+  finally { btn.disabled = false; btn.textContent = "주문 접수하기"; }
+});
+async function loadMyOrders() {
+  try {
+    const { orders } = await apiFetch("/api/orders/mine");
+    if (!orders.length) { $("myOrders").style.display = "none"; return; }
+    $("myOrderList").innerHTML = orders.map(o =>
+      `<div class="mo"><div>${esc(o.product || "BK phone")} · ${esc(o.color_name)} · ${esc(o.storage)}<small>${esc(o.order_no)} · ${esc(o.created_at)}</small></div>` +
+      `<div style="text-align:right">${won(o.total)}<br><span class="badge">${esc(o.status)}</span></div></div>`).join("");
+    $("myOrders").style.display = "block";
+  } catch {}
+}
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: 0.15 });
+document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+
+/* =====================================================================
+   10. 시작
+   ===================================================================== */
+resize();
+Object.assign(cur, sample(window.scrollY));
+buildShop(); refreshShop();
+metalMat.color.copy(TGT.metal); baseMat.color.copy(TGT.base); glowMat.color.copy(TGT.glow); padMat.color.copy(TGT.glow);
+requestAnimationFrame(loop);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { drawBattery(100); drawEar(); });
+(async () => {
+  try { const cat = await apiFetch("/api/catalog/pierce"); if (cat.colors && cat.options) { BCOLORS = cat.colors; OPTIONS = cat.options; buildShop(); refreshShop(); } } catch {}
+  try { setMe(await apiFetch("/api/me")); } catch {}
+})();
+</script>
+
+</body>
+</html>

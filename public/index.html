@@ -1,0 +1,1644 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BK phone · BumBum Company</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#ffffff; --bg2:#f5f5f7; --fg:#0b0b0f; --muted:#6e6e73; --line:#e6e6eb;
+    --accent:#2f5bff; --ok:#16a34a; --err:#dc2626;
+    --radius:22px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html.lenis,html.lenis body{height:auto}
+  .lenis.lenis-smooth{scroll-behavior:auto!important}
+  body{background:var(--bg);color:var(--fg);font-family:'Inter','Noto Sans KR',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  button,input{font-family:inherit}
+  a{color:inherit}
+
+  /* 3D 캔버스: 화면 뒤에 고정 */
+  #gl{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+  main{position:relative;z-index:1}
+
+  /* ---------- NAV ---------- */
+  nav{position:fixed;inset:0 0 auto 0;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 5vw;z-index:50;background:rgba(255,255,255,.72);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);border-bottom:1px solid rgba(0,0,0,.06)}
+  .brand{display:flex;align-items:baseline;gap:10px;text-decoration:none}
+  .brand b{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .brand span{font-size:12px;color:var(--muted);letter-spacing:.04em}
+  .nav-links{display:flex;align-items:center;gap:26px}
+  .nav-links a{font-size:14px;color:var(--muted);text-decoration:none;transition:color .2s;cursor:pointer}
+  .nav-links a:hover{color:var(--fg)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;border-radius:999px;font-weight:600;font-size:15px;padding:13px 26px;transition:transform .2s,background .2s,box-shadow .2s;text-decoration:none}
+  .btn:active{transform:scale(.97)}
+  .btn-dark{background:var(--fg);color:#fff}
+  .btn-dark:hover{background:#26262c;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+  .btn-ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+  .btn-ghost:hover{background:var(--bg2)}
+  .btn-sm{padding:8px 16px;font-size:13px}
+  @media (max-width:820px){ .nav-links a.hide-m{display:none} .brand span{display:none} }
+
+  /* ---------- 공통 스티키 섹션 ---------- */
+  .sticky-sec{position:relative}
+  .sticky{position:sticky;top:0;height:100vh;display:flex;align-items:center;padding:0 7vw}
+  .sticky.right{justify-content:flex-end}
+
+  /* HERO */
+  #hero{height:150vh}
+  .hero-copy{max-width:540px;will-change:opacity,transform}
+  .eyebrow{font-size:13px;font-weight:600;letter-spacing:.18em;color:var(--accent);text-transform:uppercase;margin-bottom:18px}
+  .hero-copy h1{font-size:clamp(64px,10vw,140px);font-weight:800;letter-spacing:-.055em;line-height:.92}
+  .hero-copy .tag{font-size:clamp(19px,2vw,24px);color:#3a3a40;margin-top:22px;font-weight:400;letter-spacing:-.01em;font-family:'Noto Sans KR',sans-serif}
+  .hero-actions{display:flex;gap:12px;margin-top:34px;flex-wrap:wrap}
+  .chips{display:flex;gap:8px;margin-top:40px;flex-wrap:wrap}
+  .chip{font-size:12px;padding:7px 12px;border-radius:999px;background:var(--bg2);color:#3a3a40;font-weight:500}
+  .scroll-cue{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);font-size:11px;letter-spacing:.3em;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:10px}
+  .scroll-cue i{width:1px;height:40px;background:linear-gradient(var(--muted),transparent);animation:cue 1.8s ease-in-out infinite;transform-origin:top}
+  @keyframes cue{0%{transform:scaleY(0)}50%{transform:scaleY(1)}100%{transform:scaleY(1);opacity:0}}
+
+  /* FEATURES */
+  .feature-sec{height:240vh}
+  .copy{max-width:440px;will-change:opacity,transform;opacity:0;font-family:'Noto Sans KR','Inter',sans-serif}
+  .copy .num{font-family:'Inter';font-size:13px;font-weight:600;letter-spacing:.16em;color:var(--accent);margin-bottom:16px}
+  .copy h2{font-size:clamp(34px,4.4vw,60px);font-weight:800;letter-spacing:-.045em;line-height:1.08;margin-bottom:18px}
+  .copy p{color:var(--muted);font-size:clamp(15px,1.25vw,18px);line-height:1.75}
+  .meter{margin-top:28px;background:rgba(245,245,247,.92);border-radius:18px;padding:18px 20px;backdrop-filter:blur(10px)}
+  .meter .row{display:flex;justify-content:space-between;align-items:baseline}
+  .meter .lbl{font-size:13px;color:var(--muted)}
+  .meter .val{font-family:'Inter';font-size:30px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .meter .bar{height:6px;border-radius:6px;background:#e3e3e8;margin-top:12px;overflow:hidden}
+  .meter .bar i{display:block;height:100%;width:100%;border-radius:6px;background:linear-gradient(90deg,#9aa9ff,var(--accent));transform-origin:left}
+  .meter .cmp{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:8px}
+  .meter .cmp b{color:var(--fg);font-weight:600}
+
+  @media (max-width:820px){
+    .sticky{align-items:flex-end;justify-content:center!important;padding:0 16px 22px}
+    .copy,.hero-copy{max-width:none;width:100%;background:rgba(255,255,255,.86);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(0,0,0,.05);border-radius:24px;padding:22px}
+    .hero-copy h1{font-size:64px}
+    .copy h2{font-size:30px;margin-bottom:10px}
+    .copy p{font-size:14px;line-height:1.65}
+    .meter{margin-top:16px;padding:14px 16px}
+    .meter .val{font-size:24px}
+    .chips{display:none}
+    .scroll-cue{display:none}
+  }
+
+  /* ---------- SHOP ---------- */
+  #shop{min-height:100vh;padding:120px 7vw 120px;display:flex;justify-content:flex-end}
+  .shop-panel{width:min(520px,100%);background:rgba(255,255,255,.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--line);border-radius:28px;padding:34px;box-shadow:0 30px 80px rgba(0,0,0,.06);font-family:'Noto Sans KR','Inter',sans-serif}
+  .sec-eyebrow{font-family:'Inter';font-size:13px;font-weight:600;letter-spacing:.16em;color:var(--accent);margin-bottom:12px}
+  .sec-title{font-size:clamp(32px,4vw,48px);font-weight:800;letter-spacing:-.045em;line-height:1.1}
+  .sec-sub{color:var(--muted);margin-top:10px;font-size:15px;line-height:1.6}
+  .field-label{font-size:13px;color:var(--muted);margin:28px 0 12px;display:flex;justify-content:space-between}
+  .field-label b{color:var(--fg);font-weight:600}
+  .swatches{display:flex;gap:14px;flex-wrap:wrap}
+  .sw{width:40px;height:40px;border-radius:50%;cursor:pointer;border:1px solid rgba(0,0,0,.12);outline:2px solid transparent;outline-offset:3px;transition:outline-color .2s,transform .2s;position:relative}
+  .sw:hover{transform:scale(1.08)}
+  .sw.on{outline-color:var(--fg)}
+  .sw .ltd{position:absolute;top:-6px;right:-8px;font-size:9px;background:var(--fg);color:#fff;border-radius:6px;padding:2px 4px;font-weight:700}
+  .storage{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .st{padding:16px;border-radius:16px;border:1.5px solid var(--line);background:#fff;cursor:pointer;text-align:left;transition:border-color .2s,background .2s}
+  .st b{display:block;font-size:17px;font-family:'Inter'}
+  .st span{font-size:13px;color:var(--muted)}
+  .st.on{border-color:var(--fg);background:var(--bg2)}
+  .price-box{margin-top:28px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+  .price{font-family:'Inter';font-size:38px;font-weight:700;letter-spacing:-.03em}
+  .price-sub{font-size:13px;color:var(--muted);margin-top:4px}
+  table.ptable{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+  .ptable th{font-weight:500;color:var(--muted);text-align:right;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px}
+  .ptable th:first-child,.ptable td:first-child{text-align:left}
+  .ptable td{padding:12px 0;border-bottom:1px solid var(--line);text-align:right;font-family:'Inter','Noto Sans KR';font-variant-numeric:tabular-nums}
+  .ptable tr.on td{font-weight:700}
+  .dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px;vertical-align:-1px;border:1px solid rgba(0,0,0,.12)}
+  @media (max-width:820px){ #shop{padding:62vh 16px 80px;justify-content:center} .shop-panel{padding:24px} }
+
+  /* ---------- 일반 섹션 ---------- */
+  .solid{position:relative;background:var(--bg);padding:130px 7vw;font-family:'Noto Sans KR','Inter',sans-serif}
+  .solid.gray{background:var(--bg2)}
+  .wrap{max-width:1180px;margin:0 auto}
+  .center{text-align:center}
+
+  /* 회원가입 */
+  .signup-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:56px;align-items:start}
+  .steps{list-style:none;display:flex;flex-direction:column;gap:14px}
+  .steps li{display:flex;gap:18px;background:#fff;border-radius:var(--radius);padding:22px;border:1px solid var(--line)}
+  .steps .n{flex:none;width:36px;height:36px;border-radius:50%;background:var(--fg);color:#fff;display:grid;place-items:center;font-family:'Inter';font-weight:700;font-size:14px}
+  .steps h4{font-size:17px;font-weight:700;margin-bottom:4px;letter-spacing:-.02em}
+  .steps p{font-size:14px;color:var(--muted);line-height:1.6}
+  .form-card{background:#fff;border-radius:28px;padding:34px;border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.05)}
+  .form-card h3{font-size:24px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
+  .form-card .hint{font-size:13px;color:var(--muted);margin-bottom:22px}
+  .f{margin-bottom:14px}
+  .f label{display:block;font-size:13px;font-weight:500;margin-bottom:6px}
+  .f input[type=text],.f input[type=email],.f input[type=tel],.f input[type=password]{width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--line);font-size:15px;background:#fff;transition:border-color .2s,box-shadow .2s;outline:none}
+  .f input:focus{border-color:var(--fg);box-shadow:0 0 0 4px rgba(0,0,0,.05)}
+  .f.bad input{border-color:var(--err)}
+  .f .msg{font-size:12px;color:var(--err);margin-top:5px;min-height:0}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .check{display:flex;gap:10px;align-items:flex-start;font-size:14px;margin:10px 0;cursor:pointer}
+  .check input{margin-top:3px;width:17px;height:17px;accent-color:var(--fg)}
+  .check small{color:var(--muted)}
+  .form-card .btn{width:100%;margin-top:14px;padding:16px}
+  .success{display:none;text-align:center;padding:30px 10px}
+  .success .ok{width:64px;height:64px;border-radius:50%;background:#e9f9ef;color:var(--ok);display:grid;place-items:center;font-size:30px;margin:0 auto 18px}
+  .success h3{margin-bottom:8px}
+  .success p{color:var(--muted);font-size:14px;line-height:1.7}
+  @media (max-width:900px){ .signup-grid{grid-template-columns:1fr} .solid{padding:90px 16px} .form-card{padding:24px} }
+
+  /* 구매 방법 */
+  .buy-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:56px;counter-reset:s}
+  .bstep{background:var(--bg2);border-radius:var(--radius);padding:26px 22px;position:relative;min-height:200px}
+  .bstep .ico{width:44px;height:44px;border-radius:14px;background:#fff;display:grid;place-items:center;margin-bottom:20px}
+  .bstep .ico svg{width:22px;height:22px;stroke:var(--fg);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .bstep .k{font-family:'Inter';font-size:12px;font-weight:600;color:var(--accent);letter-spacing:.12em;margin-bottom:6px}
+  .bstep h4{font-size:17px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px}
+  .bstep p{font-size:13px;color:var(--muted);line-height:1.6}
+  @media (max-width:1000px){ .buy-steps{grid-template-columns:1fr 1fr} }
+  @media (max-width:560px){ .buy-steps{grid-template-columns:1fr} .bstep{min-height:0} }
+
+  .order{margin:40px auto 0;max-width:640px;border:1px solid var(--line);border-radius:28px;padding:30px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;justify-content:space-between}
+  .order .o-left{display:flex;align-items:center;gap:16px}
+  .order .o-dot{width:52px;height:52px;border-radius:16px;border:1px solid rgba(0,0,0,.1)}
+  .order h4{font-size:18px;font-weight:700;letter-spacing:-.02em}
+  .order .o-sub{font-size:13px;color:var(--muted);margin-top:3px}
+  .order .o-price{font-family:'Inter';font-size:24px;font-weight:700;letter-spacing:-.02em}
+  .toast{position:fixed;left:50%;bottom:30px;transform:translate(-50%,20px);background:var(--fg);color:#fff;padding:14px 22px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .3s,transform .3s;z-index:60;pointer-events:none;font-family:'Noto Sans KR';max-width:calc(100% - 32px);text-align:center}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  footer{position:relative;background:var(--bg);border-top:1px solid var(--line);padding:50px 7vw;display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--muted);font-family:'Noto Sans KR','Inter'}
+  footer b{color:var(--fg)}
+
+  /* 04 무게: 2배 강조 */
+  .twox{display:flex;align-items:center;gap:14px;margin-top:22px}
+  .twox b{font:800 clamp(48px,6vw,76px) Inter,sans-serif;letter-spacing:-.05em;line-height:1;background:linear-gradient(135deg,#0b0b0f,#2f5bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .twox span{font-size:20px;font-weight:700;letter-spacing:-.02em;line-height:1.35}
+  .twox em{font-style:normal;font-size:13px;font-weight:500;color:var(--muted)}
+  /* 디자인 디테일 & 사양 */
+  .design-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:56px}
+  .dcard{background:var(--bg2);border-radius:24px;padding:22px}
+  .dvis{height:150px;border-radius:18px;margin-bottom:20px;position:relative;overflow:hidden}
+  .v-line{background:linear-gradient(160deg,#f3f4f6,#e4e6ea);display:grid;place-items:center}
+  .v-line i{position:relative;width:76%;height:46px;border-radius:23px;background:linear-gradient(180deg,#1a1d27,#06070a);box-shadow:0 0 0 3px #a7adb7,0 10px 24px rgba(0,0,0,.18)}
+  .v-line b{position:absolute;top:9px;width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#5a6ed0,#05060a 62%);box-shadow:0 0 0 2px #a7adb7}
+  .v-line b:nth-of-type(1){left:10px}.v-line b:nth-of-type(2){left:44px}
+  .v-line em{position:absolute;right:16px;top:50%;transform:translateY(-50%);font:200 22px Inter;font-style:normal;color:#fff}
+  .v-frame{background:linear-gradient(100deg,#9a9ca2 0%,#dfe0e2 22%,#aeb1b6 40%,#ebebec 58%,#a4a7ac 78%,#d3d4d7 100%)}
+  .v-glass{background:linear-gradient(160deg,#f3f4f6,#e4e6ea);display:flex;align-items:center;justify-content:center;gap:14px}
+  .v-glass::before,.v-glass::after{content:"";width:62px;height:96px;border-radius:14px;background:radial-gradient(120% 90% at 80% 90%,rgba(143,162,200,.6),transparent 60%),#050507;box-shadow:0 0 0 3px #2c2e33,0 10px 22px rgba(0,0,0,.2)}
+  .v-glass::after{background:radial-gradient(120% 90% at 20% 20%,rgba(143,162,200,.45),transparent 60%),#050507}
+  .v-cover{background:linear-gradient(160deg,#121521,#06070a);display:grid;place-items:center}
+  .v-cover i{width:70%;height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,#ffe9cc,transparent);box-shadow:0 0 14px #ffd9a8,0 0 30px rgba(255,217,168,.6);animation:breathe 2.6s ease-in-out infinite}
+  @keyframes breathe{50%{opacity:.45}}
+  .dcard h4{font-size:18px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px}
+  .dcard p{font-size:14px;color:var(--muted);line-height:1.65}
+  .specs{display:grid;grid-template-columns:1fr 1fr;column-gap:56px;margin:48px auto 0;max-width:980px}
+  .specs div{display:grid;grid-template-columns:150px 1fr;gap:16px;padding:20px 0;border-bottom:1px solid var(--line)}
+  .specs dt{font-size:14px;color:var(--muted)}
+  .specs dd{font-size:15px;line-height:1.6;font-weight:500}
+  @media (max-width:1000px){ .design-grid{grid-template-columns:1fr 1fr} .specs{grid-template-columns:1fr} }
+  @media (max-width:560px){ .design-grid{grid-template-columns:1fr} .specs div{grid-template-columns:110px 1fr} }
+  /* BK buds 배너 */
+  .buds-banner{display:flex;justify-content:space-between;align-items:center;gap:32px;text-decoration:none;color:#fff;border-radius:32px;padding:48px;background:radial-gradient(120% 120% at 85% 30%,#1c3346,#06080c 70%);overflow:hidden;transition:transform .3s}
+  .buds-banner:hover{transform:translateY(-4px)}
+  .buds-banner h3{font-size:clamp(26px,3.4vw,42px);font-weight:800;letter-spacing:-.04em;margin-bottom:12px}
+  .buds-banner p{color:#a9b6c4;line-height:1.7;max-width:520px}
+  .bb-link{display:inline-block;margin-top:22px;font-weight:600;color:#9eeaff}
+  .bb-case{position:relative;flex:none;width:210px;height:150px}
+  .bb-case::before{content:"";position:absolute;left:15px;right:15px;bottom:6px;height:44px;border-radius:50%/60%;background:linear-gradient(180deg,#2a2e36,#121419);box-shadow:0 0 0 2px rgba(127,227,255,.5),0 0 24px rgba(127,227,255,.35)}
+  .bb-case::after{content:"";position:absolute;left:28px;right:28px;bottom:30px;height:56px;border-radius:50% 50% 10px 10px/100% 100% 10px 10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25)}
+  .bb-case b{position:absolute;top:8px;width:58px;height:58px;border-radius:50%;border:7px solid #d9dde3;border-left-color:transparent;box-shadow:0 0 14px rgba(127,227,255,.4);transform:rotate(-30deg);animation:hov 3s ease-in-out infinite}
+  .bb-case b:nth-of-type(1){left:38px}.bb-case b:nth-of-type(2){right:38px;top:22px;animation-delay:-1.5s;transform:rotate(150deg)}
+  .bb-case b::after{content:"";position:absolute;right:-12px;top:-6px;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,#9fdcff 60%);box-shadow:0 0 12px #7fe3ff}
+  @keyframes hov{50%{translate:0 -8px}}
+  .bb-case i{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);font:600 13px Inter;font-style:normal;color:#bff3ff;text-shadow:0 0 8px #7fe3ff;z-index:1}
+  @media (max-width:820px){ .buds-banner{flex-direction:column;align-items:flex-start;padding:30px} }
+  /* 로그인 · 주문서 · 내 주문 */
+  .switch{font-size:13px;color:var(--muted);text-align:center;margin-top:16px}
+  .switch a{color:var(--fg);font-weight:600;cursor:pointer;text-decoration:underline}
+  .form-err{font-size:13px;color:var(--err);margin-top:10px;text-align:center;min-height:1.2em}
+  .modal{position:fixed;inset:0;z-index:70;background:rgba(10,10,15,.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px;font-family:'Noto Sans KR','Inter',sans-serif}
+  .modal.open{display:flex}
+  .modal-card{background:#fff;border-radius:28px;width:min(540px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:30px;box-shadow:0 40px 120px rgba(0,0,0,.2)}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+  .modal-head h3{font-size:22px;font-weight:800;letter-spacing:-.03em}
+  .x{border:0;background:var(--bg2);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:20px;line-height:1}
+  .sum{background:var(--bg2);border-radius:16px;padding:16px 18px;margin-bottom:18px;font-size:14px}
+  .sum .r{display:flex;justify-content:space-between;padding:4px 0}
+  .sum .r.t{border-top:1px solid var(--line);margin-top:8px;padding-top:10px;font-weight:700;font-size:16px}
+  .pay-note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:4px}
+  .modal .f input{width:100%;padding:13px 15px;border-radius:14px;border:1.5px solid var(--line);font-size:15px;outline:none}
+  .modal .f input:focus{border-color:var(--fg)}
+  .modal .f.bad input{border-color:var(--err)}
+  .myorders{max-width:640px;margin:26px auto 0;display:none;font-family:'Noto Sans KR','Inter',sans-serif}
+  .myorders h4{font-size:15px;margin-bottom:6px}
+  .mo{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .mo small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+  .badge{font-size:12px;padding:4px 10px;border-radius:999px;background:var(--bg2);white-space:nowrap}
+  body.can-drag{cursor:grab}
+  body.dragging,body.dragging *{cursor:grabbing!important;user-select:none}
+  .drag-hint{position:absolute;right:7vw;bottom:34px;font-size:13px;color:var(--muted);background:rgba(245,245,247,.9);padding:9px 16px;border-radius:999px;animation:hintIn 1s .8s both}
+  @keyframes hintIn{from{opacity:0;transform:translateY(8px)}}
+  @media (max-width:820px){ .drag-hint{left:16px;right:16px;bottom:auto;top:72px;text-align:center;font-size:12px} }
+  @media (hover:hover) and (max-width:820px){ .drag-hint{display:none} }
+  #hero .sticky,#shop{touch-action:pan-y pinch-zoom}
+  .reveal{opacity:0;transform:translateY(36px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<canvas id="gl"></canvas>
+
+<nav>
+  <a class="brand" data-to="#hero"><b>BK phone</b><span>BumBum Company</span></a>
+  <div class="nav-links">
+    <a class="hide-m" href="/pierce">BK pierce</a>
+    <a class="hide-m" data-to="#f1">기능</a>
+    <a class="hide-m" data-to="#design">디자인</a>
+    <a class="hide-m" data-to="#shop">색상·가격</a>
+    <a class="hide-m" data-to="#signup">회원가입</a>
+    <a class="hide-m" data-to="#howtobuy">구매 방법</a>
+    <a class="btn btn-dark btn-sm" data-to="#shop" style="color:#fff">구매하기</a>
+  </div>
+</nav>
+
+<main>
+  <!-- ===== HERO ===== -->
+  <section id="hero" class="sticky-sec">
+    <div class="sticky">
+      <div class="hero-copy" id="heroCopy">
+        <div class="eyebrow">BumBum Company</div>
+        <h1>BK phone</h1>
+        <p class="tag">접어도 흔적 없이, 쥐어도 가볍게.</p>
+        <div class="hero-actions">
+          <a class="btn btn-dark" data-to="#shop">구매하기</a>
+          <a class="btn btn-ghost" data-to="#f1">기능 살펴보기</a>
+        </div>
+        <div class="chips">
+          <span class="chip">No Crease</span><span class="chip">Zero Bezel</span><span class="chip">Flush Camera</span><span class="chip">100g</span><span class="chip">Halo Visor</span><span class="chip">Dual Outer Display</span>
+        </div>
+      </div>
+      <div class="drag-hint" id="dragHint">↻ 폰을 마우스로 끌어서 돌려보세요</div>
+      <div class="scroll-cue">SCROLL<i></i></div>
+    </div>
+  </section>
+
+  <!-- ===== 01 힌지 자국 없음 ===== -->
+  <section id="f1" class="sticky-sec feature-sec">
+    <div class="sticky">
+      <div class="copy">
+        <div class="num">01 — NO CREASE</div>
+        <h2>펼쳐도,<br>자국은 없다.</h2>
+        <p>새로 설계한 물방울 힌지가 화면을 날카롭게 꺾지 않고 부드럽게 감싸 접습니다. 빛이 화면을 가로질러도 접히는 선이 보이지 않아요.</p>
+        <div class="meter">
+          <div class="row"><span class="lbl">접힘 자국 깊이</span><span class="val" id="m1">0.12mm</span></div>
+          <div class="bar"><i id="b1"></i></div>
+          <div class="cmp"><span>일반 폴더블 0.12mm</span><span><b>BK phone 0.00mm</b></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 02 베젤 없음 ===== -->
+  <section id="f2" class="sticky-sec feature-sec">
+    <div class="sticky right">
+      <div class="copy">
+        <div class="num">02 — ZERO BEZEL</div>
+        <h2>테두리까지,<br>전부 화면.</h2>
+        <p>화면을 감싸던 검은 테두리를 없앴습니다. 전면 카메라는 화면 아래에 숨겨, 앞면 끝에서 끝까지 오직 화면만 보입니다.</p>
+        <div class="meter">
+          <div class="row"><span class="lbl">검은 테두리 두께</span><span class="val" id="m2">3.4mm</span></div>
+          <div class="bar"><i id="b2"></i></div>
+          <div class="cmp"><span>일반 스마트폰 3.4mm</span><span><b>BK phone 0.0mm</b></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 03 카메라 돌출 없음 ===== -->
+  <section id="f3" class="sticky-sec feature-sec">
+    <div class="sticky">
+      <div class="copy">
+        <div class="num">03 — FLUSH CAMERA</div>
+        <h2>카메라,<br>튀어나오지 않게.</h2>
+        <p>초박형 폴디드 렌즈를 커버 글라스 안쪽에 완전히 넣었습니다. 렌즈와 유리가 한 면으로 이어져, 책상 위에 눕혀도 흔들리지 않고 주머니에서도 걸리지 않아요.</p>
+        <div class="meter">
+          <div class="row"><span class="lbl">카메라 돌출 높이</span><span class="val" id="m3">2.1mm</span></div>
+          <div class="bar"><i id="b3"></i></div>
+          <div class="cmp"><span>일반 스마트폰 2.1mm</span><span><b>BK phone 0.0mm</b></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 04 경량화 ===== -->
+  <section id="f4" class="sticky-sec feature-sec">
+    <div class="sticky right">
+      <div class="copy">
+        <div class="num">04 — FEATHERLIGHT</div>
+        <h2>저울에 올려 보면,<br>차이가 보입니다.</h2>
+        <p>티타늄 합금 힌지와 카본 프레임으로 무게를 크게 덜어냈습니다. 타사 폴더블폰과 나란히 올려 보면 BK phone 쪽이 번쩍 들려 올라가요.</p>
+        <div class="twox"><b>약 2배</b><span>더 가볍습니다<br><em>BK phone 100g · 타사 폴더블 187g</em></span></div>
+        <div class="meter">
+          <div class="row"><span class="lbl">무게</span><span class="val" id="m4">187g</span></div>
+          <div class="bar"><i id="b4"></i></div>
+          <div class="cmp"><span>타사 폴더블 187g</span><span><b>BK phone 100g</b></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 색상 & 가격 ===== -->
+  <section id="shop">
+    <div class="shop-panel reveal">
+      <div class="sec-eyebrow">COLORS &amp; PRICE</div>
+      <h2 class="sec-title">나에게 맞는<br>BK phone 고르기</h2>
+      <p class="sec-sub">색상을 누르면 왼쪽 폰의 프레임 색과 바깥 화면 테마가 바로 바뀝니다. 폰을 마우스로 끌어 앞뒤 화면을 돌려볼 수도 있어요.</p>
+
+      <div class="field-label"><span>색상</span><b id="colorName">퓨어 화이트</b></div>
+      <div class="swatches" id="swatches"></div>
+
+      <div class="field-label"><span>저장 용량</span></div>
+      <div class="storage" id="storage">
+        <button class="st on" data-i="0"><b>256GB</b><span>₩1,390,000부터</span></button>
+        <button class="st" data-i="1"><b>512GB</b><span>₩1,590,000부터</span></button>
+      </div>
+
+      <div class="price-box">
+        <div>
+          <div class="price" id="price">₩1,390,000</div>
+          <div class="price-sub" id="priceSub">월 57,917원 (24개월 무이자)</div>
+        </div>
+        <a class="btn btn-dark" data-to="#howtobuy">구매 방법 보기</a>
+      </div>
+
+      <div class="field-label" style="margin-top:34px"><span>전체 가격표</span></div>
+      <table class="ptable">
+        <thead><tr><th>색상</th><th>256GB</th><th>512GB</th></tr></thead>
+        <tbody id="ptable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== 디자인 디테일 & 사양 ===== -->
+  <section id="design" class="solid">
+    <div class="wrap">
+      <div class="center reveal">
+        <div class="sec-eyebrow">DESIGN</div>
+        <h2 class="sec-title">작은 디테일까지, BK답게</h2>
+        <p class="sec-sub">손에 닿는 모든 면을 다시 설계했습니다.</p>
+      </div>
+      <div class="design-grid">
+        <div class="dcard reveal"><div class="dvis v-line"><i><b></b><b></b><em>50MP</em></i></div><h4>헤일로 바이저</h4><p>렌즈 두 개를 알약 모양의 스모크 유리 하나에 담아 바깥 화면 위에 띄웠어요. 둘레의 얇은 금속 테두리는 컬러마다 다른 색으로 마감했습니다.</p></div>
+        <div class="dcard reveal"><div class="dvis v-frame"></div><h4>새틴 티타늄 프레임</h4><p>항공우주 등급 티타늄 합금을 바디 컬러에 맞춰 톤 다운했습니다. 가볍지만 휘지 않아요.</p></div>
+        <div class="dcard reveal"><div class="dvis v-glass"></div><h4>양면 디스플레이</h4><p>접어도 앞뒤 모두 화면이에요. 한쪽은 시계와 위젯, 다른 쪽은 음악과 셀카 미리보기로 쓸 수 있습니다.</p></div>
+        <div class="dcard reveal"><div class="dvis v-cover"><i></i></div><h4>빛나는 힌지 라인</h4><p>접으면 힌지를 따라 가느다란 빛의 선이 드러나요. 알림이 오면 숨 쉬듯 은은하게 빛납니다.</p></div>
+      </div>
+
+      <div class="center reveal" style="margin-top:110px">
+        <div class="sec-eyebrow">SPECS</div>
+        <h2 class="sec-title">한눈에 보는 사양</h2>
+      </div>
+      <dl class="specs reveal">
+        <div><dt>메인 디스플레이</dt><dd>6.9" 플렉서블 OLED · 120Hz<br>베젤 0mm · 접힘 자국 0mm</dd></div>
+        <div><dt>바깥 화면</dt><dd>양면 디스플레이 · 접었을 때 앞뒤 모두 화면<br>헤일로 바이저 (렌즈 일체형 스모크 글라스)</dd></div>
+        <div><dt>크기</dt><dd>펼쳤을 때 72 × 165 × 6.4mm<br>접었을 때 72 × 85 × 13.9mm</dd></div>
+        <div><dt>무게</dt><dd>100g (타사 폴더블 187g보다 약 2배 가벼움)</dd></div>
+        <div><dt>카메라</dt><dd>50MP 메인 + 12MP 초광각 (돌출 0mm)<br>전면 10MP 언더 디스플레이 카메라</dd></div>
+        <div><dt>칩셋 · 메모리</dt><dd>BumBum B1 (3nm) · 12GB RAM<br>256GB / 512GB</dd></div>
+        <div><dt>배터리</dt><dd>4,300mAh · 45W 유선 · 15W 무선 충전</dd></div>
+        <div><dt>힌지</dt><dd>물방울 힌지 · 접힘 테스트 40만 회</dd></div>
+        <div><dt>소재</dt><dd>새틴 티타늄 프레임 · 세라믹 실드 글라스</dd></div>
+        <div><dt>방수·방진</dt><dd>IP68</dd></div>
+        <div><dt>연결</dt><dd>5G · Wi-Fi 7 · Bluetooth 5.4 · USB-C</dd></div>
+        <div><dt>구성품</dt><dd>본체 · USB-C 케이블 · 유심 핀</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ===== BK pierce 소개 배너 ===== -->
+  <section class="solid" style="padding-top:0">
+    <div class="wrap">
+      <a class="buds-banner reveal" href="/pierce">
+        <div>
+          <div class="sec-eyebrow" style="color:#9eeaff">NEW · BK pierce</div>
+          <h3>귀를 뚫지 않는 피어싱, 귀에 거는 음악</h3>
+          <p>귓바퀴에 끼우기만 하는 피어싱형 오디오. 오래 껴도 귀가 아프지 않고, 노이즈 캔슬링과 터치 조작까지 그대로예요.</p>
+          <span class="bb-link">BK pierce 보러 가기 →</span>
+        </div>
+        <div class="bb-case"><b></b><b></b><i>100%</i></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ===== 회원가입 ===== -->
+  <section id="signup" class="solid gray">
+    <div class="wrap">
+      <div class="center reveal">
+        <div class="sec-eyebrow">SIGN UP</div>
+        <h2 class="sec-title">회원가입은 1분이면 충분해요</h2>
+        <p class="sec-sub">가입하면 구매 내역 확인, 배송 조회, 신제품 소식을 받아볼 수 있어요.</p>
+      </div>
+
+      <div class="signup-grid">
+        <ol class="steps">
+          <li class="reveal"><div class="n">1</div><div><h4>기본 정보 입력</h4><p>이름, 이메일, 휴대폰 번호를 입력합니다.</p></div></li>
+          <li class="reveal"><div class="n">2</div><div><h4>비밀번호 설정</h4><p>영문과 숫자를 섞어 8자 이상으로 만들어 주세요.</p></div></li>
+          <li class="reveal"><div class="n">3</div><div><h4>약관 동의</h4><p>필수 약관에 동의하고, 원하면 혜택 소식 수신에도 동의합니다.</p></div></li>
+          <li class="reveal"><div class="n">4</div><div><h4>가입 완료</h4><p>가입 즉시 첫 구매 5% 할인 쿠폰이 지급됩니다.</p></div></li>
+        </ol>
+
+        <div class="form-card reveal">
+          <form id="signupForm" novalidate>
+            <h3>회원가입</h3>
+            <p class="hint">* 표시는 필수 항목입니다.</p>
+            <div class="f"><label for="name">이름 *</label><input type="text" id="name" autocomplete="name" placeholder="홍길동"><div class="msg"></div></div>
+            <div class="f"><label for="email">이메일 *</label><input type="email" id="email" autocomplete="email" placeholder="you@example.com"><div class="msg"></div></div>
+            <div class="f"><label for="phone">휴대폰 번호 *</label><input type="tel" id="phone" autocomplete="tel" placeholder="010-1234-5678"><div class="msg"></div></div>
+            <div class="two">
+              <div class="f"><label for="pw">비밀번호 *</label><input type="password" id="pw" autocomplete="new-password" placeholder="8자 이상"><div class="msg"></div></div>
+              <div class="f"><label for="pw2">비밀번호 확인 *</label><input type="password" id="pw2" autocomplete="new-password"><div class="msg"></div></div>
+            </div>
+            <label class="check"><input type="checkbox" id="agree"><span>[필수] 이용약관 및 개인정보 수집·이용에 동의합니다.</span></label>
+            <label class="check"><input type="checkbox" id="marketing"><span>[선택] 신제품·이벤트 소식 받기 <small>(이메일·문자)</small></span></label>
+            <div class="f" id="agreeMsg"><div class="msg"></div></div>
+            <button class="btn btn-dark" type="submit">가입하기</button>
+            <div class="form-err" id="signupErr"></div>
+            <p class="switch">이미 회원이신가요? <a data-show="login">로그인</a></p>
+          </form>
+
+          <form id="loginForm" novalidate style="display:none">
+            <h3>로그인</h3>
+            <p class="hint">가입한 이메일과 비밀번호를 입력하세요.</p>
+            <div class="f"><label for="lemail">이메일</label><input type="email" id="lemail" autocomplete="email"><div class="msg"></div></div>
+            <div class="f"><label for="lpw">비밀번호</label><input type="password" id="lpw" autocomplete="current-password"><div class="msg"></div></div>
+            <button class="btn btn-dark" type="submit">로그인</button>
+            <div class="form-err" id="loginErr"></div>
+            <p class="switch">아직 회원이 아니신가요? <a data-show="signup">회원가입</a></p>
+          </form>
+
+          <div class="success" id="signupDone">
+            <div class="ok">✓</div>
+            <h3 id="welcome">가입을 환영합니다!</h3>
+            <p id="welcomeSub">첫 구매 5% 할인 쿠폰이 지급되었어요.<br>이제 아래에서 바로 주문할 수 있습니다.</p>
+            <button class="btn btn-ghost" id="logoutBtn" style="width:auto;margin-top:20px">로그아웃</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 구매 방법 ===== -->
+  <section id="howtobuy" class="solid">
+    <div class="wrap">
+      <div class="center reveal">
+        <div class="sec-eyebrow">HOW TO BUY</div>
+        <h2 class="sec-title">이렇게 구매하세요</h2>
+        <p class="sec-sub">주문부터 배송까지 다섯 단계. 무료 배송, 30일 무료 반품.</p>
+      </div>
+
+      <div class="buy-steps">
+        <div class="bstep reveal"><div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16"/></svg></div><div class="k">STEP 1</div><h4>색상·용량 선택</h4><p>위에서 원하는 색상과 저장 용량을 고릅니다.</p></div>
+        <div class="bstep reveal"><div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></div><div class="k">STEP 2</div><h4>로그인</h4><p>회원가입 후 로그인하면 쿠폰이 자동 적용돼요.</p></div>
+        <div class="bstep reveal"><div class="ico"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 4l9 6.5V20H3z"/><path d="M9 20v-6h6v6"/></svg></div><div class="k">STEP 3</div><h4>배송지 입력</h4><p>받으실 주소와 연락처, 배송 요청사항을 입력합니다.</p></div>
+        <div class="bstep reveal"><div class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg></div><div class="k">STEP 4</div><h4>주문 접수·결제</h4><p>주문이 접수되면 확인 후 결제 방법을 안내해 드려요.</p></div>
+        <div class="bstep reveal"><div class="ico"><svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg></div><div class="k">STEP 5</div><h4>배송·수령</h4><p>결제 후 1~2일 안에 도착. 마이페이지에서 배송 조회.</p></div>
+      </div>
+
+      <div class="order reveal">
+        <div class="o-left">
+          <div class="o-dot" id="oDot"></div>
+          <div>
+            <h4 id="oName">BK phone · 퓨어 화이트</h4>
+            <div class="o-sub" id="oSub">256GB · 무료 배송</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:18px">
+          <div class="o-price" id="oPrice">₩1,390,000</div>
+          <button class="btn btn-dark" id="orderBtn">주문하기</button>
+        </div>
+      </div>
+
+      <div class="myorders" id="myOrders">
+        <h4>내 주문 내역</h4>
+        <div id="myOrderList"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div><b>BumBum Company</b> · BK phone</div>
+    <div>© 2026 BumBum Company. 이 사이트는 가상 제품 데모입니다.</div>
+  </footer>
+</main>
+
+<!-- 주문서 (배송지 입력) -->
+<div class="modal" id="orderModal" role="dialog" aria-modal="true" aria-labelledby="orderTitle">
+  <div class="modal-card">
+    <div class="modal-head"><h3 id="orderTitle">주문서</h3><button class="x" data-close aria-label="닫기">×</button></div>
+    <form id="orderForm" novalidate>
+      <div class="sum">
+        <div class="r"><span id="sumName">BK phone</span><span id="sumUnit"></span></div>
+        <div class="r" id="sumDiscRow"><span>첫 구매 5% 할인</span><span id="sumDisc"></span></div>
+        <div class="r"><span>배송비</span><span>무료</span></div>
+        <div class="r t"><span>결제 예정 금액</span><span id="sumTotal"></span></div>
+      </div>
+      <div class="two">
+        <div class="f"><label for="oRecipient">받는 분 *</label><input type="text" id="oRecipient" autocomplete="name"><div class="msg"></div></div>
+        <div class="f"><label for="oPhone">연락처 *</label><input type="tel" id="oPhone" autocomplete="tel" placeholder="010-1234-5678"><div class="msg"></div></div>
+      </div>
+      <div class="f"><label for="oZip">우편번호 *</label><input type="text" id="oZip" inputmode="numeric" maxlength="5" placeholder="48058" autocomplete="postal-code"><div class="msg"></div></div>
+      <div class="f"><label for="oAddr">주소 *</label><input type="text" id="oAddr" placeholder="부산광역시 해운대구 ○○로 00, 101동 1001호" autocomplete="street-address"><div class="msg"></div></div>
+      <div class="f"><label for="oMemo">배송 요청사항</label><input type="text" id="oMemo" placeholder="문 앞에 놓아 주세요" maxlength="200"><div class="msg"></div></div>
+      <p class="pay-note">결제는 아직 연결되지 않았어요. 주문이 접수되면 관리자가 확인 후 결제 안내를 드립니다.</p>
+      <button class="btn btn-dark" type="submit" id="orderSubmit" style="width:100%;margin-top:10px;padding:16px">주문 접수하기</button>
+      <div class="form-err" id="orderErr"></div>
+    </form>
+    <div class="success" id="orderDone">
+      <div class="ok">✓</div>
+      <h3>주문이 접수되었어요</h3>
+      <p>주문번호 <b id="doneNo"></b><br>결제 금액 <b id="doneTotal"></b><br>확인 후 연락드릴게요.</p>
+      <button class="btn btn-dark" data-close style="width:auto;margin-top:20px">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script>
+/* =====================================================================
+   0. 제품 데이터
+   ===================================================================== */
+// 화면 표시용 기본값. 실제 가격은 서버(/api/catalog)가 기준이며, 주문 금액도 서버에서 다시 계산합니다.
+let COLORS = [
+  { id: "black",    name: "오닉스 블랙",     hex: "#141518", frame: "#2c2e33", accent: "#a7adb7", tint: "#8fa2c8", extra: 0 },
+  { id: "graphite", name: "그래파이트",      hex: "#3b3d42", frame: "#6a6d73", accent: "#c8ccd3", tint: "#9aa3b5", extra: 0 },
+  { id: "cloud",    name: "클라우드 화이트", hex: "#ecebe6", frame: "#d9d7d1", accent: "#c9a77c", tint: "#d9c4a3", extra: 0 },
+  { id: "sage",     name: "세이지 그린",     hex: "#b8c3ae", frame: "#a9b0a1", accent: "#e2cfa6", tint: "#9fbf9a", extra: 0 },
+  { id: "blush",    name: "블러쉬 핑크",     hex: "#ebd3cf", frame: "#d9bdb6", accent: "#c98e7c", tint: "#e3a6a0", extra: 0 },
+  { id: "ice",      name: "아이스 블루 (한정판)", hex: "#c9d9e8", frame: "#b3c3d3", accent: "#f2f4f7", tint: "#9cc6ee", extra: 50000 }
+];
+let STORAGE = [ { id: "256", name: "256GB", price: 1390000 }, { id: "512", name: "512GB", price: 1590000 } ];
+const sel = { color: 0, storage: 0 };
+const won = n => "₩" + n.toLocaleString("ko-KR");
+
+/* =====================================================================
+   1. 부드러운 스크롤 (Lenis)
+   ===================================================================== */
+let lenis = null;
+try {
+  lenis = new Lenis({ lerp: 0.085, smoothWheel: true, wheelMultiplier: 0.9 });
+} catch (e) { lenis = null; }
+
+document.querySelectorAll("[data-to]").forEach(a => {
+  a.addEventListener("click", e => {
+    e.preventDefault();
+    const el = document.querySelector(a.dataset.to);
+    if (!el) return;
+    const y = el.getBoundingClientRect().top + window.scrollY;
+    if (lenis) lenis.scrollTo(y, { duration: 1.6 });
+    else window.scrollTo({ top: y, behavior: "smooth" });
+  });
+});
+
+/* =====================================================================
+   2. Three.js 장면 — BK phone 3D 모델
+   구성: 새틴 티타늄 프레임 + 진주빛 유리 뒷면 + 헤일로 바이저(렌즈·작은 화면) + 빛나는 힌지 라인
+   ===================================================================== */
+const canvas = document.getElementById("gl");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+renderer.setClearColor(0x000000, 0);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+camera.position.set(0, 0.55, 6.2);
+camera.lookAt(0, 0, 0);
+
+/* 반사용 환경맵: 소프트박스가 있는 밝은 스튜디오 */
+(function makeEnv() {
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const env = new THREE.Scene();
+  env.add(new THREE.Mesh(new THREE.BoxGeometry(20, 20, 20),
+    new THREE.MeshBasicMaterial({ color: new THREE.Color(0.62, 0.63, 0.66), side: THREE.BackSide })));
+  const panel = (w, h, x, y, z, k) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h),
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(k, k, k), side: THREE.DoubleSide }));
+    m.position.set(x, y, z); m.lookAt(0, 0, 0); env.add(m);
+  };
+  panel(9, 2.4, 0, 9, 2, 9);       // 천장 소프트박스
+  panel(1.6, 10, -9, 1, 5, 5);     // 왼쪽 길쭉한 조명 → 프레임에 선명한 하이라이트
+  panel(1.6, 10, 9, 0, 3, 3.5);    // 오른쪽 조명
+  panel(6, 6, 0, 2, -9, 1.6);      // 뒤쪽 림 라이트
+  panel(10, 3, 0, -8, 6, 1.2);     // 바닥 반사판
+  scene.environment = pmrem.fromScene(env, 0.035).texture;
+})();
+scene.add(new THREE.AmbientLight(0xffffff, 0.15));
+const keyLight = new THREE.DirectionalLight(0xffffff, 0.8); keyLight.position.set(3, 5, 6); scene.add(keyLight);
+const rimLight = new THREE.DirectionalLight(0xdfe6ff, 0.5); rimLight.position.set(-5, 2, -4); scene.add(rimLight);
+
+/* ---------- 치수 (1 unit ≈ 72mm) ---------- */
+const W = 1.0;     // 폭
+const H = 1.1;     // 반쪽 높이 (펼치면 2.2)
+const T = 0.072;   // 반쪽 두께
+const R = 0.15;    // 모서리 반경
+const BV = 0.014;  // 모서리 라운드(베벨)
+const P = T / 2 + 0.006; // 힌지 축 z 위치
+
+/* 모서리별 반경을 줄 수 있는 둥근 사각형 */
+function rrShape(x0, y0, x1, y1, tl, tr, br, bl) {
+  const s = new THREE.Shape();
+  s.moveTo(x0 + bl, y0);
+  s.lineTo(x1 - br, y0); s.quadraticCurveTo(x1, y0, x1, y0 + br);
+  s.lineTo(x1, y1 - tr); s.quadraticCurveTo(x1, y1, x1 - tr, y1);
+  s.lineTo(x0 + tl, y1); s.quadraticCurveTo(x0, y1, x0, y1 - tl);
+  s.lineTo(x0, y0 + bl); s.quadraticCurveTo(x0, y0, x0 + bl, y0);
+  return s;
+}
+function bodyGeo(y0, y1, outerTop) {
+  const r = R - BV, f = 0.003;
+  const s = outerTop
+    ? rrShape(-W/2 + BV, y0 + BV, W/2 - BV, y1 - BV, r, r, f, f)
+    : rrShape(-W/2 + BV, y0 + BV, W/2 - BV, y1 - BV, f, f, r, r);
+  const d = T - 2 * BV;
+  const g = new THREE.ExtrudeGeometry(s, { depth: d, bevelEnabled: true, bevelThickness: BV, bevelSize: BV, bevelSegments: 8, curveSegments: 32 });
+  g.translate(0, 0, -d / 2);
+  g.computeVertexNormals();
+  return g;
+}
+/* 안쪽 화면: UV를 '펼친 전체 화면' 기준으로 계산 → 위/아래가 하나의 화면처럼 이어짐 */
+function screenGeo(y0, y1, outerTop) {
+  const e = BV * 0.7, r = R - BV;
+  const s = outerTop
+    ? rrShape(-W/2 + e, y0, W/2 - e, y1 - e, r, r, 0, 0)
+    : rrShape(-W/2 + e, y0 + e, W/2 - e, y1, 0, 0, r, r);
+  const g = new THREE.ShapeGeometry(s, 32);
+  const pos = g.attributes.position, uv = g.attributes.uv;
+  for (let i = 0; i < pos.count; i++)
+    uv.setXY(i, (pos.getX(i) + W/2) / W, (pos.getY(i) + H) / (2 * H));
+  uv.needsUpdate = true;
+  return g;
+}
+function normUVGeo(shape) {
+  const g = new THREE.ShapeGeometry(shape, 32);
+  g.computeBoundingBox();
+  const b = g.boundingBox, pos = g.attributes.position, uv = g.attributes.uv;
+  for (let i = 0; i < pos.count; i++)
+    uv.setXY(i, (pos.getX(i) - b.min.x) / (b.max.x - b.min.x), (pos.getY(i) - b.min.y) / (b.max.y - b.min.y));
+  uv.needsUpdate = true;
+  return g;
+}
+function canvasTex(w, h) {
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8;
+  return { c, ctx: c.getContext("2d"), t };
+}
+
+/* ---------- 재질 (색상은 선택한 컬러에 맞춰 부드럽게 바뀜) ---------- */
+const frameMat  = new THREE.MeshStandardMaterial({ color: 0xd8d6d0, metalness: 1, roughness: 0.34 });          // 새틴 티타늄 프레임
+const backMat   = new THREE.MeshPhysicalMaterial({ color: 0x141518, metalness: 0, roughness: 0.4, clearcoat: 0.7, clearcoatRoughness: 0.2, envMapIntensity: 0.55, toneMapped: false });
+const accentMat = new THREE.MeshStandardMaterial({ color: 0xc9a77c, metalness: 1, roughness: 0.16 });          // 포인트 금속 (렌즈 링·바이저 테두리·로고)
+const lightMat  = new THREE.MeshBasicMaterial({ color: 0xffe9cc, toneMapped: false });                        // 힌지의 빛나는 실선
+const WHITE = new THREE.Color(1, 1, 1);
+const darkMetal = new THREE.MeshStandardMaterial({ color: 0x18191c, metalness: 0.85, roughness: 0.32 });
+const holeMat   = new THREE.MeshBasicMaterial({ color: 0x08080a });
+const antennaMat= new THREE.MeshStandardMaterial({ color: 0x8c8e93, metalness: 0.2, roughness: 0.6 });
+// 화면 유리 반사: 화면 위에 '반사만' 더해 주는 얇은 층
+const glassGloss = new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 0, roughness: 0.05,
+  transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, envMapIntensity: 0.55 });
+
+const PHONE_COLOR = { frame: new THREE.Color(0xd8d6d0), back: new THREE.Color(0xeceae4), accent: new THREE.Color(0xc9a77c) };
+// 화면에 정확한 색이 나오도록 색상 코드(sRGB)를 3D 계산용 값(linear)으로 바꿔서 넣음
+let outerTint = "#8fa2c8";
+function setPhoneColor(c) {
+  if (c.tint && c.tint !== outerTint) { outerTint = c.tint; if (typeof drawOuter === "function") drawOuter(); }
+  PHONE_COLOR.frame.set(c.frame || c.hex).convertSRGBToLinear();
+  PHONE_COLOR.back.set(c.hex).convertSRGBToLinear();
+  PHONE_COLOR.accent.set(c.accent || "#c9a77c").convertSRGBToLinear();
+}
+function lerpPhoneColors(k) {
+  frameMat.color.lerp(PHONE_COLOR.frame, k);
+  backMat.color.lerp(PHONE_COLOR.back, k);
+  accentMat.color.lerp(PHONE_COLOR.accent, k);
+  logoMats.forEach(m => m.color.copy(accentMat.color));
+  lightMat.color.copy(accentMat.color).lerp(WHITE, 0.55);
+}
+
+/* ---------- 안쪽 화면 (실크 배경 잠금화면) ---------- */
+const INN = canvasTex(600, 1320), IC = INN.c, ictx = INN.ctx, innerTex = INN.t;
+function rr(c, x, y, w, h, r) {
+  c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
+  c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
+}
+function blob(c, x, y, r, col) {
+  const g = c.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, col); g.addColorStop(1, "rgba(0,0,0,0)");
+  c.fillStyle = g; c.fillRect(x - r, y - r, r * 2, r * 2);
+}
+function drawWallpaper(c, w, h) {
+  const g = c.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, "#0a0c14"); g.addColorStop(1, "#141827");
+  c.fillStyle = g; c.fillRect(0, 0, w, h);
+  // 오로라: 부드럽게 겹치는 빛 덩어리
+  c.save(); c.globalCompositeOperation = "lighter";
+  [[w * 0.15, h * 0.12, w * 0.95, "255,150,140", 0.42], [w * 0.95, h * 0.38, w * 0.9, "140,120,255", 0.42],
+   [w * 0.25, h * 0.78, w * 1.0, "70,210,200", 0.3], [w * 0.8, h * 0.95, w * 0.7, "255,200,120", 0.22]].forEach(([x, y, r, rgb, a]) => {
+    const rg = c.createRadialGradient(x, y, 0, x, y, r); rg.addColorStop(0, `rgba(${rgb},${a})`); rg.addColorStop(1, `rgba(${rgb},0)`);
+    c.fillStyle = rg; c.fillRect(0, 0, w, h);
+  });
+  c.restore();
+  // 가운데 떠 있는 유리 구슬
+  const ox = w * 0.62, oy = h * 0.47, orr = w * 0.24;
+  const og = c.createRadialGradient(ox - orr * 0.35, oy - orr * 0.4, orr * 0.05, ox, oy, orr);
+  og.addColorStop(0, "rgba(255,255,255,.55)"); og.addColorStop(0.35, "rgba(255,255,255,.12)"); og.addColorStop(1, "rgba(255,255,255,.02)");
+  c.fillStyle = og; c.beginPath(); c.arc(ox, oy, orr, 0, Math.PI * 2); c.fill();
+  c.strokeStyle = "rgba(255,255,255,.25)"; c.lineWidth = 1.5; c.stroke();
+  // 아주 고운 필름 노이즈
+  const r = mulberryW(5);
+  for (let k = 0; k < 2600; k++) { c.fillStyle = `rgba(255,255,255,${0.02 + r() * 0.05})`; c.fillRect(r() * w, r() * h, 1.5, 1.5); }
+}
+function mulberryW(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function drawInner(sweep, bezel, crease) {
+  const c = ictx, w = IC.width, h = IC.height;
+  drawWallpaper(c, w, h);
+
+  // 화면 아래 숨긴 전면 카메라 (거의 보이지 않음)
+  c.fillStyle = "rgba(255,255,255,.035)"; c.beginPath(); c.arc(w / 2, 44, 11, 0, Math.PI * 2); c.fill();
+
+  // 상태 표시줄
+  c.fillStyle = "#fff"; c.textBaseline = "alphabetic"; c.textAlign = "left";
+  c.font = "600 26px Inter, sans-serif"; c.fillText("9:41", 46, 56);
+  for (let i = 0; i < 4; i++) { c.fillStyle = i < 3 ? "#fff" : "rgba(255,255,255,.4)"; c.fillRect(w - 168 + i * 11, 48 - i * 5, 7, 8 + i * 5); }
+  c.strokeStyle = "rgba(255,255,255,.7)"; c.lineWidth = 2; c.beginPath(); rr(c, w - 108, 33, 50, 24, 7); c.stroke();
+  c.fillStyle = "#fff"; c.beginPath(); rr(c, w - 104, 37, 36, 16, 4); c.fill();
+  c.fillStyle = "rgba(255,255,255,.7)"; c.fillRect(w - 56, 41, 4, 8);
+
+  // 시계
+  c.textAlign = "center";
+  c.font = "500 26px Inter, sans-serif"; c.fillStyle = "rgba(255,255,255,.7)"; c.fillText("FRIDAY · OCTOBER 23", w / 2, 186);
+  c.font = "100 230px Inter, sans-serif"; c.fillStyle = "#fff"; c.fillText("9:41", w / 2, 400);
+
+  // 알림 카드 (아래쪽 화면)
+  c.fillStyle = "rgba(255,255,255,.10)"; c.beginPath(); rr(c, 36, 760, w - 72, 150, 40); c.fill();
+  c.strokeStyle = "rgba(255,255,255,.18)"; c.lineWidth = 1.5; c.stroke();
+  c.fillStyle = "#fff"; c.beginPath(); rr(c, 66, 792, 64, 64, 18); c.fill();
+  c.fillStyle = "#14141a"; c.font = "800 26px Inter"; c.fillText("BK", 98, 834);
+  c.textAlign = "left"; c.fillStyle = "#fff";
+  c.font = "600 24px 'Noto Sans KR'"; c.fillText("BumBum Store", 154, 812);
+  c.font = "400 23px 'Noto Sans KR'"; c.fillStyle = "rgba(255,255,255,.75)"; c.fillText("주문하신 BK phone이 출발했어요 📦", 154, 852);
+  c.textAlign = "right"; c.font = "400 20px 'Noto Sans KR'"; c.fillStyle = "rgba(255,255,255,.5)"; c.fillText("지금", w - 66, 812);
+
+  // 음악 카드
+  c.fillStyle = "rgba(255,255,255,.08)"; c.beginPath(); rr(c, 36, 928, w - 72, 120, 40); c.fill();
+  c.strokeStyle = "rgba(255,255,255,.15)"; c.lineWidth = 1.5; c.stroke();
+  const ag = c.createLinearGradient(66, 952, 138, 1024); ag.addColorStop(0, "#ff9a8b"); ag.addColorStop(1, "#7c6cff");
+  c.fillStyle = ag; c.beginPath(); rr(c, 66, 952, 72, 72, 16); c.fill();
+  c.textAlign = "left"; c.fillStyle = "#fff"; c.font = "600 23px 'Noto Sans KR'"; c.fillText("Midnight Drive", 160, 980);
+  c.fillStyle = "rgba(255,255,255,.6)"; c.font = "400 20px 'Noto Sans KR'"; c.fillText("Lofi Seoul", 160, 1012);
+  c.fillStyle = "rgba(255,255,255,.25)"; c.fillRect(160, 1028, 300, 4); c.fillStyle = "#fff"; c.fillRect(160, 1028, 120, 4);
+
+  // 하단 바로가기 & 홈 인디케이터
+  [96, w - 96].forEach((x, k) => {
+    c.fillStyle = "rgba(255,255,255,.10)"; c.beginPath(); c.arc(x, 1196, 46, 0, Math.PI * 2); c.fill();
+    c.strokeStyle = "rgba(255,255,255,.22)"; c.lineWidth = 1.5; c.stroke();
+    c.strokeStyle = "#fff"; c.lineWidth = 3; c.beginPath();
+    if (k === 0) { c.moveTo(x - 8, 1180); c.lineTo(x + 8, 1180); c.lineTo(x + 4, 1212); c.lineTo(x - 4, 1212); c.closePath(); }
+    else { rr(c, x - 16, 1184, 32, 24, 6); c.moveTo(x + 7, 1196); c.arc(x, 1196, 7, 0, Math.PI * 2); }
+    c.stroke();
+  });
+  c.fillStyle = "rgba(255,255,255,.85)"; c.beginPath(); rr(c, w / 2 - 80, 1284, 160, 9, 4.5); c.fill();
+
+  // [연출] 일반 폴더블의 접힘 자국 (crease 1 → 0)
+  if (crease > 0.002) {
+    const y = h / 2;
+    const cg = c.createLinearGradient(0, y - 34, 0, y + 34);
+    cg.addColorStop(0, "rgba(0,0,0,0)");
+    cg.addColorStop(0.36, `rgba(0,0,0,${0.35 * crease})`);
+    cg.addColorStop(0.5, `rgba(255,255,255,${0.32 * crease})`);
+    cg.addColorStop(0.64, `rgba(0,0,0,${0.35 * crease})`);
+    cg.addColorStop(1, "rgba(0,0,0,0)");
+    c.fillStyle = cg; c.fillRect(0, y - 34, w, 68);
+  }
+  // [연출] 화면을 가로지르는 빛 반사
+  if (sweep > 0.002 && sweep < 0.998) {
+    const yy = -320 + sweep * (h + 640);
+    c.save(); c.translate(w / 2, yy); c.rotate(-0.32); c.globalCompositeOperation = "lighter";
+    const sg = c.createLinearGradient(0, -120, 0, 120);
+    sg.addColorStop(0, "rgba(255,255,255,0)"); sg.addColorStop(0.5, "rgba(255,255,255,.55)"); sg.addColorStop(1, "rgba(255,255,255,0)");
+    c.fillStyle = sg; c.fillRect(-w, -120, w * 2, 240); c.restore();
+  }
+  // [연출] 일반 폰의 검은 테두리 (bezel 1 → 0)
+  if (bezel > 0.002) {
+    const b = bezel * 40;
+    c.fillStyle = "#020203"; c.beginPath();
+    c.rect(0, 0, w, h); rr(c, b, b, w - 2 * b, h - 2 * b, 36 + b);
+    c.fill("evenodd");
+    c.beginPath(); c.arc(w / 2, b * 0.5 + 18 * bezel, 13 * bezel, 0, Math.PI * 2); c.fill();
+  }
+  innerTex.needsUpdate = true;
+}
+
+/* ---------- 커버 디스플레이 (접었을 때 바르게 보이도록 180° 돌려 그림) ---------- */
+// 헤일로 바이저: 힌지 가까이 가로로 놓인 알약 모양 스모크 유리 띠 (렌즈 2개 + 시계)
+const COVER = { x0: -0.43, x1: 0.43, y0: 0.09, y1: 0.33, r: 0.12 };
+const LENS = [{ x: -0.31, y: 0.21, r: 0.068 }, { x: -0.15, y: 0.21, r: 0.068 }];
+const CV = canvasTex(600, Math.round(600 * (COVER.y1 - COVER.y0) / (COVER.x1 - COVER.x0)));
+function coverXY(x, y) {   // 3D 좌표 → 커버 캔버스 좌표 (접은 상태에서 본 방향)
+  return [(x - COVER.x0) / (COVER.x1 - COVER.x0) * CV.c.width, (y - COVER.y0) / (COVER.y1 - COVER.y0) * CV.c.height];
+}
+function drawCover() {
+  const c = CV.ctx, w = CV.c.width, h = CV.c.height;
+  c.save(); c.translate(w, h); c.rotate(Math.PI);
+  const g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, "#161923"); g.addColorStop(1, "#06070a");
+  c.fillStyle = g; c.fillRect(0, 0, w, h);
+  blob(c, w * 0.8, h * 0.15, w * 0.32, "rgba(150,170,255,.18)");
+  blob(c, w * 0.55, h * 1.05, w * 0.35, "rgba(255,160,200,.12)");
+  LENS.forEach(L => {   // 렌즈 자리
+    const [x, y] = coverXY(L.x, L.y), r = L.r / (COVER.x1 - COVER.x0) * w;
+    c.strokeStyle = "rgba(255,255,255,.12)"; c.lineWidth = 2; c.beginPath(); c.arc(x, y, r + 7, 0, Math.PI * 2); c.stroke();
+  });
+  c.fillStyle = "rgba(255,255,255,.08)"; c.beginPath(); c.arc(w * 0.62, h * 0.5, h * 0.12, 0, Math.PI * 2); c.fill();   // 거리 센서 창
+  c.fillStyle = "rgba(255,255,255,.35)"; c.font = `600 ${Math.round(h * 0.13)}px Inter, sans-serif`; c.textAlign = "right"; c.textBaseline = "middle";
+  c.fillText("50MP · ƒ1.6", w * 0.92, h * 0.5);
+  const lg = c.createLinearGradient(w * 0.12, 0, w * 0.88, 0);   // 아래쪽 빛 라인
+  lg.addColorStop(0, "rgba(255,255,255,0)"); lg.addColorStop(0.5, "rgba(210,225,255,.9)"); lg.addColorStop(1, "rgba(255,255,255,0)");
+  c.fillStyle = lg; c.fillRect(w * 0.12, h * 0.92, w * 0.76, Math.max(2, h * 0.016));
+  c.restore();
+  CV.t.needsUpdate = true;
+}
+
+/* ---------- 바깥 양면 디스플레이 (접었을 때 앞·뒤 모두 화면) ---------- */
+// 위쪽 반의 바깥면: 접었을 때 앞을 보는 화면 → 바이저(카메라) 아래로 시계·위젯
+// 아래쪽 반의 바깥면: 접었을 때 뒤를 보는 화면 → 음악·셀카 미리보기
+const ODE = 0.012;
+const OD_T = { x0: -W/2 + ODE, x1: W/2 - ODE, y0: 0.012, y1: H - ODE };
+const OD_B = { x0: -W/2 + ODE, x1: W/2 - ODE, y0: -H + ODE, y1: -0.012 };
+const ODT = canvasTex(600, 640), ODB = canvasTex(600, 640);
+const rgbOf = hex => { const n = parseInt(hex.slice(1), 16); return `${n >> 16 & 255},${n >> 8 & 255},${n & 255}`; };
+function odXY(R, C, x, y) { return [(x - R.x0) / (R.x1 - R.x0) * C.c.width, (y - R.y0) / (R.y1 - R.y0) * C.c.height]; }
+function outerBg(c, w, h, tint) {
+  c.fillStyle = "#050507"; c.fillRect(0, 0, w, h);
+  const t = rgbOf(tint);
+  const g1 = c.createRadialGradient(w * 0.8, h * 0.85, 0, w * 0.8, h * 0.85, w * 0.95); g1.addColorStop(0, `rgba(${t},.42)`); g1.addColorStop(1, `rgba(${t},0)`);
+  c.fillStyle = g1; c.fillRect(0, 0, w, h);
+  const g2 = c.createRadialGradient(w * 0.1, h * 0.25, 0, w * 0.1, h * 0.25, w * 0.7); g2.addColorStop(0, `rgba(${t},.18)`); g2.addColorStop(1, `rgba(${t},0)`);
+  c.fillStyle = g2; c.fillRect(0, 0, w, h);
+}
+function drawOuter() {
+  // 앞 화면 (위쪽 반 바깥면, 접은 방향에 맞춰 180° 돌려 그림)
+  let c = ODT.ctx, w = ODT.c.width, h = ODT.c.height;
+  c.save(); c.translate(w, h); c.rotate(Math.PI);
+  outerBg(c, w, h, outerTint);
+  const vy = odXY(OD_T, ODT, 0, COVER.y1)[1];               // 바이저 아래부터 내용
+  c.textAlign = "center"; c.textBaseline = "alphabetic";
+  c.fillStyle = "rgba(255,255,255,.62)"; c.font = "500 22px Inter, sans-serif"; c.fillText("FRIDAY · OCTOBER 23", w / 2, vy + 70);
+  c.fillStyle = "#fff"; c.font = "100 190px Inter, sans-serif"; c.fillText("9:41", w / 2, vy + 250);
+  [[w * 0.22, "19°", "부산"], [w * 0.5, "86%", "배터리"], [w * 0.78, "2", "새 메시지"]].forEach(([x, big, small], k) => {
+    const y = h - 120;
+    c.fillStyle = "rgba(255,255,255,.07)"; c.beginPath(); c.arc(x, y, 62, 0, Math.PI * 2); c.fill();
+    c.strokeStyle = "rgba(255,255,255,.14)"; c.lineWidth = 1.5; c.stroke();
+    if (k === 1) { c.strokeStyle = `rgb(${rgbOf(outerTint)})`; c.lineWidth = 5; c.lineCap = "round"; c.beginPath(); c.arc(x, y, 56, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * 0.86); c.stroke(); }
+    c.fillStyle = "#fff"; c.font = "300 34px Inter, sans-serif"; c.fillText(big, x, y + 8);
+    c.fillStyle = "rgba(255,255,255,.5)"; c.font = "400 15px 'Noto Sans KR', sans-serif"; c.fillText(small, x, y + 34);
+  });
+  c.restore(); ODT.t.needsUpdate = true;
+  // 뒤 화면 (아래쪽 반 바깥면): 지금 재생 중
+  c = ODB.ctx; w = ODB.c.width; h = ODB.c.height;
+  outerBg(c, w, h, outerTint);
+  const t = rgbOf(outerTint);
+  c.fillStyle = "rgba(255,255,255,.55)"; c.font = "600 20px Inter, sans-serif"; c.textAlign = "center"; c.fillText("NOW PLAYING", w / 2, 70);
+  const ax = w / 2 - 150, ay = 100, as = 300;   // 앨범 아트
+  const ag = c.createLinearGradient(ax, ay, ax + as, ay + as); ag.addColorStop(0, `rgba(${t},1)`); ag.addColorStop(1, "#1a1c24");
+  c.fillStyle = ag; c.beginPath(); rr(c, ax, ay, as, as, 34); c.fill();
+  c.strokeStyle = "rgba(255,255,255,.35)"; c.lineWidth = 2; c.beginPath(); c.arc(w / 2, ay + as / 2, 90, 0, Math.PI * 2); c.stroke();
+  c.beginPath(); c.arc(w / 2, ay + as / 2, 12, 0, Math.PI * 2); c.fillStyle = "rgba(255,255,255,.6)"; c.fill();
+  c.fillStyle = "#fff"; c.font = "600 34px Inter, sans-serif"; c.fillText("Midnight Drive", w / 2, 460);
+  c.fillStyle = "rgba(255,255,255,.55)"; c.font = "400 22px Inter, sans-serif"; c.fillText("Lofi Seoul", w / 2, 496);
+  c.fillStyle = "rgba(255,255,255,.18)"; c.fillRect(110, 530, w - 220, 4); c.fillStyle = "#fff"; c.fillRect(110, 530, (w - 220) * 0.42, 4);
+  [[w / 2 - 110, "prev"], [w / 2, "pause"], [w / 2 + 110, "next"]].forEach(([x, kind]) => {
+    const y = 588; c.fillStyle = "#fff";
+    if (kind === "pause") { c.beginPath(); c.arc(x, y, 30, 0, Math.PI * 2); c.fill(); c.fillStyle = "#050507"; c.fillRect(x - 9, y - 11, 6, 22); c.fillRect(x + 3, y - 11, 6, 22); }
+    else { const d = kind === "next" ? 1 : -1; c.beginPath(); c.moveTo(x - 10 * d, y - 12); c.lineTo(x + 6 * d, y); c.lineTo(x - 10 * d, y + 12); c.closePath(); c.fill(); c.fillRect(x + 7 * d - (d > 0 ? 0 : 3), y - 12, 3, 24); }
+  });
+  ODB.t.needsUpdate = true;
+}
+
+/* ---------- 로고 (시그니처 컬러 금속 느낌, alphaMap 사용) ---------- */
+const logoMats = [];
+function logoTex(text, font, w, h, rotated) {
+  const L = canvasTex(w, h);
+  const c = L.ctx;
+  c.fillStyle = "#000"; c.fillRect(0, 0, w, h);
+  c.save(); if (rotated) { c.translate(w, h); c.rotate(Math.PI); }
+  c.fillStyle = "#fff"; c.textAlign = "center"; c.textBaseline = "middle"; c.font = font; c.fillText(text, w / 2, h / 2 + 2);
+  c.restore(); L.t.encoding = THREE.LinearEncoding; L.t.needsUpdate = true;
+  return L;
+}
+function logoMesh(text, font, pw, ph, rotated) {
+  const L = logoTex(text, font, 512, Math.round(512 * ph / pw), rotated);
+  const m = new THREE.MeshStandardMaterial({ color: 0xc9a77c, metalness: 1, roughness: 0.22, alphaMap: L.t, transparent: true, depthWrite: false });
+  logoMats.push(m);
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(pw, ph), m);
+  mesh.rotation.y = Math.PI;
+  mesh.userData.redraw = () => { const n = logoTex(text, font, 512, Math.round(512 * ph / pw), rotated); m.alphaMap = n.t; m.needsUpdate = true; };
+  return mesh;
+}
+
+/* ---------- 렌즈 텍스처 (코팅 반사가 비치는 유리) ---------- */
+const LT = canvasTex(256, 256);
+(function drawLens() {
+  const c = LT.ctx, s = 256, m = s / 2;
+  c.fillStyle = "#020204"; c.fillRect(0, 0, s, s);
+  [[0.98, "#15161c"], [0.78, "#07080c"], [0.6, "#101423"], [0.4, "#05060a"]].forEach(([r, col]) => {
+    c.fillStyle = col; c.beginPath(); c.arc(m, m, m * r, 0, Math.PI * 2); c.fill();
+  });
+  c.globalCompositeOperation = "lighter";
+  blob(c, m * 0.72, m * 0.72, m * 0.55, "rgba(90,110,255,.45)");
+  blob(c, m * 1.3, m * 1.25, m * 0.4, "rgba(170,90,255,.30)");
+  blob(c, m * 1.1, m * 0.7, m * 0.25, "rgba(60,220,200,.18)");
+  c.fillStyle = "rgba(255,255,255,.75)"; c.beginPath(); c.arc(m * 0.68, m * 0.66, m * 0.07, 0, Math.PI * 2); c.fill();
+  LT.t.needsUpdate = true;
+})();
+const lensMat = new THREE.MeshPhysicalMaterial({ map: LT.t, roughness: 0.04, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.02 });
+
+/* ---------- 모델 조립 ---------- */
+const rig = new THREE.Group();     // 스크롤로 움직이는 바깥 그룹
+const inner = new THREE.Group();   // 접힘 상태에 따라 중심을 맞추는 그룹
+rig.add(inner); scene.add(rig);
+const BACK_Z = -T / 2;
+
+const screenMat = new THREE.MeshBasicMaterial({ map: innerTex, toneMapped: false });
+function addScreen(parent, y0, y1, outerTop) {
+  const geo = screenGeo(y0, y1, outerTop);
+  const s = new THREE.Mesh(geo, screenMat); s.position.z = T / 2 + 0.002; parent.add(s);
+  const gl = new THREE.Mesh(geo, glassGloss); gl.position.z = T / 2 + 0.0026; parent.add(gl);
+}
+function outerMesh(parent, Rc, C, roundTop) {
+  const rr0 = R - ODE, f = 0.015;
+  const s = roundTop ? rrShape(Rc.x0, Rc.y0, Rc.x1, Rc.y1, rr0, rr0, f, f) : rrShape(Rc.x0, Rc.y0, Rc.x1, Rc.y1, f, f, rr0, rr0);
+  const geo = normUVGeo(s);
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: C.t, toneMapped: false })); m.rotation.y = Math.PI; m.position.z = BACK_Z - 0.0016; parent.add(m);
+  const gl = new THREE.Mesh(geo, glassGloss); gl.rotation.y = Math.PI; gl.position.z = BACK_Z - 0.002; parent.add(gl);
+}
+function addBackGlass(parent, y0, y1, outerTop) {
+  const e = 0.012, r = R - e, f = 0.02;
+  const s = outerTop ? rrShape(-W/2 + e, y0, W/2 - e, y1 - e, r, r, f, f)
+                     : rrShape(-W/2 + e, y0 + e, W/2 - e, y1, f, f, r, r);
+  const m = new THREE.Mesh(normUVGeo(s), backMat);
+  m.rotation.y = Math.PI; m.position.z = BACK_Z - 0.0015; parent.add(m);
+}
+function hole(parent, x, y, w, h, up) {   // 아래/위 모서리의 포트·스피커 구멍
+  const r = Math.min(w, h) / 2;
+  const m = new THREE.Mesh(new THREE.ShapeGeometry(rrShape(-w/2, -h/2, w/2, h/2, r, r, r, r), 8), holeMat);
+  m.rotation.x = up ? -Math.PI / 2 : Math.PI / 2;
+  m.position.set(x, y + (up ? 0.0006 : -0.0006), 0); parent.add(m);
+}
+function antenna(parent, y) {
+  [-1, 1].forEach(sx => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(0.0062, 0.007, T - 2 * BV + 0.004), antennaMat);
+    m.position.set(sx * (W / 2 - 0.0026), y, 0); parent.add(m);
+  });
+}
+
+/* 아래쪽 반 */
+inner.add(new THREE.Mesh(bodyGeo(-H, 0, false), frameMat));
+addScreen(inner, -H, 0, false);
+outerMesh(inner, OD_B, ODB, false);   // 뒤 화면
+hole(inner, 0, -H, 0.105, 0.03, false);                                   // USB-C
+for (let i = 0; i < 6; i++) hole(inner, 0.13 + i * 0.026, -H, 0.012, 0.012, false); // 스피커
+hole(inner, -0.16, -H, 0.01, 0.01, false);                                 // 마이크
+antenna(inner, -H + 0.2);
+
+/* 힌지 */
+const hingeGeo = new THREE.CylinderGeometry(T / 2, T / 2, W - 0.006, 48);
+hingeGeo.rotateZ(Math.PI / 2);
+inner.add(new THREE.Mesh(hingeGeo, frameMat));
+
+/* 위쪽 반 (힌지 축 기준으로 회전) */
+const pivot = new THREE.Group(); pivot.position.set(0, 0, P); inner.add(pivot);
+const topHalf = new THREE.Group(); topHalf.position.set(0, 0, -P); pivot.add(topHalf);
+topHalf.add(new THREE.Mesh(bodyGeo(0, H, true), frameMat));
+addScreen(topHalf, 0, H, true);
+outerMesh(topHalf, OD_T, ODT, true);  // 앞 화면 (접었을 때)
+topHalf.add(new THREE.Mesh(hingeGeo, frameMat));
+
+// 커버 디스플레이 + 유리 반사
+const coverGeo = normUVGeo(rrShape(COVER.x0, COVER.y0, COVER.x1, COVER.y1, COVER.r, COVER.r, COVER.r, COVER.r));
+const cover = new THREE.Mesh(coverGeo, new THREE.MeshBasicMaterial({ map: CV.t, toneMapped: false }));
+cover.rotation.y = Math.PI; cover.position.z = BACK_Z - 0.0025; topHalf.add(cover);
+const coverGloss = new THREE.Mesh(coverGeo, glassGloss);
+coverGloss.rotation.y = Math.PI; coverGloss.position.z = BACK_Z - 0.003; topHalf.add(coverGloss);
+
+// 바이저 둘레의 얇은 금속 테두리
+(() => {
+  const k = 0.009, o = rrShape(COVER.x0 - k, COVER.y0 - k, COVER.x1 + k, COVER.y1 + k, COVER.r + k, COVER.r + k, COVER.r + k, COVER.r + k);
+  o.holes.push(rrShape(COVER.x0, COVER.y0, COVER.x1, COVER.y1, COVER.r, COVER.r, COVER.r, COVER.r));
+  const m = new THREE.Mesh(new THREE.ShapeGeometry(o, 32), accentMat); m.rotation.y = Math.PI; m.position.z = BACK_Z - 0.0024; topHalf.add(m);
+})();
+// 힌지의 빛나는 실선 (접었을 때 위쪽 모서리에서만 보임)
+const seam = new THREE.Mesh(new THREE.CylinderGeometry(0.0032, 0.0032, W * 0.72, 12), lightMat);
+seam.rotation.z = Math.PI / 2; seam.position.set(0, T / 2 + 0.0004, 0); inner.add(seam);
+
+// 측면 버튼 (전원/지문 + 볼륨)
+[[0.2, 0.13], [0.43, 0.2]].forEach(([y, len]) => {
+  const b = new THREE.Mesh(new THREE.BoxGeometry(0.008, len, 0.026), frameMat);
+  b.position.set(W / 2 + 0.003, y, 0); topHalf.add(b);
+});
+hole(topHalf, 0.12, H, 0.01, 0.01, true);   // 위쪽 마이크
+antenna(topHalf, H - 0.2);
+
+// 카메라 렌즈 (bump 값에 따라 튀어나왔다가 유리 안으로 쏙 들어감)
+const lenses = [];
+LENS.forEach(L => {
+  const g = new THREE.Group(); g.position.set(L.x, L.y, BACK_Z); topHalf.add(g);
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(L.r, L.r, 1, 64), darkMetal); barrel.rotation.x = Math.PI / 2;
+  const ring  = new THREE.Mesh(new THREE.RingGeometry(L.r * 0.86, L.r, 64), accentMat); ring.rotation.y = Math.PI;
+  const black = new THREE.Mesh(new THREE.RingGeometry(L.r * 0.7, L.r * 0.86, 64), darkMetal); black.rotation.y = Math.PI;
+  const glass = new THREE.Mesh(new THREE.CircleGeometry(L.r * 0.7, 64), lensMat); glass.rotation.y = Math.PI;
+  g.add(barrel, ring, black, glass);
+  lenses.push({ barrel, ring, black, glass });
+});
+const flash = new THREE.Mesh(new THREE.CircleGeometry(0.015, 32), new THREE.MeshStandardMaterial({ color: 0xf3e6c8, roughness: 0.3, emissive: 0x2a2418 }));
+flash.rotation.y = Math.PI; flash.position.set(-0.04, 0.245, BACK_Z - 0.0032); topHalf.add(flash);
+const sensor = new THREE.Mesh(new THREE.CircleGeometry(0.01, 24), darkMetal);
+sensor.rotation.y = Math.PI; sensor.position.set(-0.04, 0.175, BACK_Z - 0.0032); topHalf.add(sensor);
+
+function setBump(b) {
+  const L = 0.0034 + b * 0.07;
+  lenses.forEach(l => {
+    l.barrel.scale.y = L; l.barrel.position.z = -L / 2;
+    l.ring.position.z = -L - 0.0004; l.black.position.z = -L - 0.0005; l.glass.position.z = -L - 0.0006;
+  });
+}
+
+// 바닥 그림자
+const SC = document.createElement("canvas"); SC.width = SC.height = 256;
+(() => { const c = SC.getContext("2d"); const g = c.createRadialGradient(128, 128, 0, 128, 128, 128);
+  g.addColorStop(0, "rgba(0,0,0,.55)"); g.addColorStop(0.5, "rgba(0,0,0,.18)"); g.addColorStop(1, "rgba(0,0,0,0)");
+  c.fillStyle = g; c.fillRect(0, 0, 256, 256); })();
+const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 0.9),
+  new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(SC), transparent: true, depthWrite: false }));
+shadow.rotation.x = -Math.PI / 2; scene.add(shadow);
+
+/* ---------- 무게 비교 저울 (04) ---------- */
+const balance = new THREE.Group(); balance.visible = false; scene.add(balance);
+const balWhite  = new THREE.MeshPhysicalMaterial({ color: 0xf4f4f2, roughness: 0.3, clearcoat: 0.8, transparent: true, opacity: 0 });
+const balChrome = new THREE.MeshStandardMaterial({ color: 0xd0d3d8, metalness: 1, roughness: 0.18, transparent: true, opacity: 0 });
+const compBody  = new THREE.MeshStandardMaterial({ color: 0x5b5e64, metalness: 0.35, roughness: 0.45, transparent: true, opacity: 0 });
+const compDark  = new THREE.MeshStandardMaterial({ color: 0x111214, metalness: 0.4, roughness: 0.25, transparent: true, opacity: 0 });
+const fadeMats = [balWhite, balChrome, compBody, compDark];
+const BEAM = 0.95, DROP = 0.62, PIV = 1.36;
+function cylBetween(a, b, r, mat) {
+  const d = b.clone().sub(a), m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, d.length(), 10), mat);
+  m.position.copy(a).add(b).multiplyScalar(0.5);
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()); return m;
+}
+const bBase = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.46, 0.08, 64), balWhite); bBase.position.y = 0.04; balance.add(bBase);
+const bPillar = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.045, PIV - 0.08, 32), balChrome); bPillar.position.y = 0.08 + (PIV - 0.08) / 2; balance.add(bPillar);
+const bKnob = new THREE.Mesh(new THREE.SphereGeometry(0.06, 32, 16), balChrome); bKnob.position.y = PIV; balance.add(bKnob);
+const beamG = new THREE.Group(); beamG.position.y = PIV; balance.add(beamG);
+const beamBar = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 2 * BEAM, 24), balChrome); beamBar.rotation.z = Math.PI / 2; beamG.add(beamBar);
+[-1, 1].forEach(sx => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.035, 20, 12), balChrome); e.position.x = sx * BEAM; beamG.add(e); });
+const pointer = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.22, 16), balChrome); pointer.position.y = 0.13; beamG.add(pointer);   // 바늘
+const pans = [-1, 1].map(side => {
+  const g = new THREE.Group(); balance.add(g);
+  [0, 2.094, 4.189].forEach(a => g.add(cylBetween(new THREE.Vector3(0, 0, 0), new THREE.Vector3(Math.cos(a) * 0.36, -DROP, Math.sin(a) * 0.36), 0.004, balChrome)));
+  const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.37, 0.035, 64), balWhite); plate.position.y = -DROP; g.add(plate);
+  const seat = new THREE.Object3D(); seat.position.y = -DROP + 0.02; g.add(seat);
+  return { g, side, seat };
+});
+// 타사 폴더블폰 (두껍고 카메라가 튀어나온 일반 모델)
+const comp = new THREE.Group(); comp.position.y = 0.12 * 0.5; comp.scale.setScalar(0.5); comp.rotation.set(-Math.PI / 2, 0, -0.5); pans[1].seat.add(comp);
+(() => {
+  const s = rrShape(-0.46, -0.55, 0.46, 0.55, 0.12, 0.12, 0.12, 0.12);
+  const g = new THREE.ExtrudeGeometry(s, { depth: 0.18, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 5, curveSegments: 20 });
+  g.translate(0, 0, -0.09); comp.add(new THREE.Mesh(g, compBody));
+  const bump = new THREE.ExtrudeGeometry(rrShape(-0.36, 0.1, 0.02, 0.48, 0.08, 0.08, 0.08, 0.08), { depth: 0.05, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.01, bevelSegments: 3 });
+  bump.translate(0, 0, 0.11); comp.add(new THREE.Mesh(bump, compBody));
+  [[-0.26, 0.38], [-0.08, 0.38], [-0.26, 0.2]].forEach(([x, y]) => {
+    const l = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 0.05, 32), compDark); l.rotation.x = Math.PI / 2; l.position.set(x, y, 0.18); comp.add(l);
+  });
+})();
+// 무게 라벨
+function labelSprite(name, weight, accent) {
+  const c = document.createElement("canvas"); c.width = 512; c.height = 216;
+  const x = c.getContext("2d");
+  x.fillStyle = accent ? "#0b0b0f" : "#ffffff"; x.beginPath(); rr(x, 8, 8, 496, 200, 60); x.fill();
+  if (!accent) { x.strokeStyle = "#d9d9de"; x.lineWidth = 4; x.stroke(); }
+  x.textAlign = "center"; x.fillStyle = accent ? "#9db2ff" : "#6e6e73"; x.font = "600 44px 'Noto Sans KR', Inter, sans-serif"; x.fillText(name, 256, 84);
+  x.fillStyle = accent ? "#ffffff" : "#0b0b0f"; x.font = "800 82px Inter, sans-serif"; x.fillText(weight, 256, 170);
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, opacity: 0, depthTest: false, toneMapped: false }));
+  sp.renderOrder = 10; scene.add(sp); return sp;
+}
+const labOurs = labelSprite("BK phone", "100g", true), labComp = labelSprite("타사 폴더블", "187g", false);
+const labTwo = labelSprite("무게 차이", "약 2배", true);   // 저울 위 가운데
+const balQ = new THREE.Quaternion(), qLie = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0.5, "YXZ"));
+const _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3();
+function placeBalance(M) {
+  balance.position.set(M ? 0 : -1.05, M ? -0.2 : -0.98, 0);
+  balance.scale.setScalar(M ? 0.64 : 1.02); balance.rotation.set(0.24, 0.15, 0);
+}
+function applyBalance() {
+  const b = clamp01(cur.bal);
+  balance.visible = b > 0.003;
+  labOurs.visible = labComp.visible = labTwo.visible = balance.visible;
+  if (!balance.visible) return 0;
+  fadeMats.forEach(m => { m.opacity = b; m.transparent = b < 0.999; });
+  const th = -0.4 * cur.tilt;   // 가벼운 BK phone 쪽(왼쪽)이 크게 올라감 (약 2배 차이)
+  beamG.rotation.z = th;
+  pans.forEach(p => p.g.position.set(Math.cos(th) * BEAM * p.side, PIV + Math.sin(th) * BEAM * p.side, 0));
+  balance.updateMatrixWorld(true);
+  // 우리 폰을 왼쪽 접시 위로 (펼친 상태가 아닌 접은 상태로 눕힘)
+  pans[0].seat.getWorldPosition(_p); pans[0].seat.getWorldQuaternion(_q);
+  const ps = balance.scale.x * 0.5;
+  _p.y += 0.085 * ps;
+  rig.position.lerp(_p, b);
+  rig.quaternion.slerp(_q.multiply(qLie), b);
+  rig.scale.lerp(_s.set(ps, ps, ps), b);
+  const lo = smooth(0.15, 0.6, cur.tilt) * b, ls = balance.scale.x;
+  [[labOurs, pans[0]], [labComp, pans[1]]].forEach(([sp, p]) => {
+    p.seat.getWorldPosition(_p); sp.position.copy(_p).add(new THREE.Vector3(0, 0.62 * ls, 0));
+    sp.scale.set(0.62 * ls, 0.26 * ls, 1); sp.material.opacity = lo;
+  });
+  // 가운데 "2배" 표시: 기울기가 거의 끝났을 때 저울 위에 크게
+  const two = smooth(0.6, 1, cur.tilt) * b;
+  bKnob.getWorldPosition(_p); labTwo.position.copy(_p).add(new THREE.Vector3(0, 0.55 * ls, 0));
+  labTwo.scale.set(0.8 * ls * (0.85 + 0.15 * two), 0.34 * ls * (0.85 + 0.15 * two), 1); labTwo.material.opacity = two;
+  return b;
+}
+const clamp01 = v => Math.max(0, Math.min(1, v));
+const smooth = (a, b, x) => { const t = clamp01((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+
+/* =====================================================================
+   3. 스크롤 키프레임
+   스크롤 위치마다 폰의 '목표 상태'를 정해 두고, 사이를 보간합니다.
+   ===================================================================== */
+let KEYS = [], M = false;
+const cur = {};
+function at(id, a, off = 0) {
+  const el = document.querySelector(id);
+  const r = el.getBoundingClientRect();
+  const top = r.top + window.scrollY, vh = window.innerHeight;
+  return top + a * Math.max(1, r.height - vh) + off * vh;
+}
+function buildKeys() {
+  M = window.innerWidth < 820;
+  placeBalance(M);
+  const X = M ? 0 : 1.08;           // 좌우 이동 폭
+  const Y = M ? 0.5 : 0;            // 모바일은 폰을 위쪽에
+  const TAU = Math.PI * 2;
+  const raw = [
+    // HERO: 접힌 상태, 커버 화면과 카메라가 보임
+    [0, { px: X, py: Y + 0.05, pz: 0, rx: 0.2, ry: -0.55, rz: 0.1, fold: 1, sc: M ? 0.95 : 1.3, lift: 0,
+          sweep: 0, bezel: 0, crease: 0, bump: 0, heavy: 1, sh: 0.35, op: 1, bal: 0, tilt: 0 }],
+    // 01: 펼치면 접힌 자국이 보임 → 폰이 한 바퀴 도는 동안 자국이 사라짐
+    [at("#f1", 0),    { ry: -0.3, rx: 0.12, rz: 0.04, sc: M ? 0.9 : 1.22, crease: 1 }],
+    [at("#f1", 0.3),  { fold: 0, crease: 1, rx: -0.06, ry: -0.3, rz: 0, sc: M ? 0.72 : 1.0, py: Y }],
+    [at("#f1", 0.42), { ry: -0.3 }],                                  // 자국을 잠깐 보여줌
+    [at("#f1", 0.6),  { ry: -0.3 + Math.PI, crease: 1 }],             // 반 바퀴 (뒤돌아 있을 때)
+    [at("#f1", 0.62), { crease: 0 }],                                 // 이때 자국이 없어짐
+    [at("#f1", 0.8),  { ry: -0.3 + TAU }],                            // 한 바퀴 끝: 깨끗한 화면
+    [at("#f1", 0.95), { ry: -0.15 + TAU }],
+    // 02: 처음부터 검은 테두리가 있음 → 가장자리로 확대된 상태에서 테두리가 걷힘
+    [at("#f2", 0, -0.35), { bezel: 0 }],
+    [at("#f2", 0),    { bezel: 1 }],
+    [at("#f2", 0.12), { px: -X, ry: TAU + 0.3, rx: -0.04, sc: M ? 0.74 : 1.0, bezel: 1, py: Y }],
+    [at("#f2", 0.45), { ry: TAU + 0.55, rx: 0.06, px: M ? 0 : -X * 0.85, py: M ? Y - 0.45 : -0.6, sc: M ? 1.0 : 1.5, bezel: 1 }],
+    [at("#f2", 0.75), { bezel: 0, sc: M ? 1.1 : 1.65 }],
+    [at("#f2", 0.92), { ry: TAU + 0.4 }],
+    // 03: 다시 접어서 카메라 면 → 렌즈가 쏙 들어간 뒤 옆모습
+    [at("#f3", 0.12), { px: X, py: Y, fold: 1, bump: 1, rx: 0.06, ry: TAU - 0.25, rz: 0, sc: M ? 0.95 : 1.35 }],
+    [at("#f3", 0.5),  { bump: 0, ry: TAU - 0.3 }],
+    [at("#f3", 0.92), { ry: TAU - 1.32, rx: 0.14, sc: M ? 1.05 : 1.6 }],
+    // 04: 가볍게 떠오르며 한 바퀴
+    // 04 무게: 폰이 저울 왼쪽 접시에 올라가고, 타사 폴더블 쪽으로 기울어짐
+    [at("#f4", 0.08), { px: -X, ry: TAU + 0.35, rx: 0.12, sc: M ? 0.95 : 1.25, heavy: 1, lift: 0, sh: 0.35, bal: 0, tilt: 0 }],
+    [at("#f4", 0.32), { bal: 1 }],
+    [at("#f4", 0.72), { tilt: 1, heavy: 0 }],
+    [at("#f4", 0.95), { tilt: 1 }],
+    // 색상·가격: 펼친 채 왼쪽에 고정
+    [at("#shop", 0, -0.1), { fold: 1, px: M ? 0 : -1.15, py: M ? 0.5 : 0, lift: 0, ry: TAU - 0.5, rx: 0.12, rz: 0.04, sc: M ? 0.85 : 1.3, sh: 0.3, op: 1, bal: 0, tilt: 0 }],
+    [at("#shop", 1),       { ry: TAU + 0.25 }],
+    // 회원가입 섹션부터 3D는 사라짐
+    [at("#design", 0, -0.9), { op: 1 }],
+    [at("#design", 0, -0.3), { op: 0, lift: 0.5 }]
+  ];
+  let prev = {};
+  KEYS = raw.map(([y, s]) => { prev = Object.assign({}, prev, s); return { y, s: prev }; });
+  for (let i = 1; i < KEYS.length; i++) if (KEYS[i].y <= KEYS[i - 1].y) KEYS[i].y = KEYS[i - 1].y + 1;
+}
+const ease = t => t * t * (3 - 2 * t);
+function sample(y) {
+  if (y <= KEYS[0].y) return KEYS[0].s;
+  const last = KEYS[KEYS.length - 1];
+  if (y >= last.y) return last.s;
+  let i = 0; while (y >= KEYS[i + 1].y) i++;
+  const a = KEYS[i], b = KEYS[i + 1], t = ease((y - a.y) / (b.y - a.y)), o = {};
+  for (const k in a.s) o[k] = a.s[k] + (b.s[k] - a.s[k]) * t;
+  return o;
+}
+
+/* =====================================================================
+   4. 텍스트 페이드 & 수치 미터
+   ===================================================================== */
+const heroCopy = document.getElementById("heroCopy");
+const feats = ["#f1", "#f2", "#f3", "#f4"].map(id => {
+  const sec = document.querySelector(id);
+  return { sec, copy: sec.querySelector(".copy") };
+});
+function secProgress(sec, y) {
+  const top = sec.offsetTop, h = sec.offsetHeight, vh = window.innerHeight;
+  return (y - top) / Math.max(1, h - vh);
+}
+const $ = id => document.getElementById(id);
+const meters = {
+  m1: $("m1"), b1: $("b1"), m2: $("m2"), b2: $("b2"), m3: $("m3"), b3: $("b3"), m4: $("m4"), b4: $("b4")
+};
+function updateText(y) {
+  const hp = secProgress(document.getElementById("hero"), y);
+  const ho = clamp01(1 - (hp - 0.25) / 0.45);
+  heroCopy.style.opacity = ho;
+  heroCopy.style.transform = `translateY(${(1 - ho) * -40}px)`;
+  feats.forEach(f => {
+    const p = secProgress(f.sec, y);
+    const o = clamp01(Math.min((p + 0.02) / 0.16, (1.02 - p) / 0.14));
+    f.copy.style.opacity = o;
+    f.copy.style.transform = `translateY(${(1 - o) * 40}px)`;
+  });
+  meters.m1.textContent = (cur.crease * 0.12).toFixed(2) + "mm"; meters.b1.style.transform = `scaleX(${cur.crease})`;
+  meters.m2.textContent = (cur.bezel * 3.4).toFixed(1) + "mm";  meters.b2.style.transform = `scaleX(${cur.bezel})`;
+  meters.m3.textContent = (cur.bump * 2.1).toFixed(1) + "mm";   meters.b3.style.transform = `scaleX(${cur.bump})`;
+  meters.m4.textContent = Math.round(100 + cur.heavy * 87) + "g"; meters.b4.style.transform = `scaleX(${(100 + cur.heavy * 87) / 187})`;
+}
+
+/* =====================================================================
+   5. 렌더 루프
+   ===================================================================== */
+setPhoneColor(COLORS[0]);
+drawOuter();
+frameMat.color.copy(PHONE_COLOR.frame); backMat.color.copy(PHONE_COLOR.back); accentMat.color.copy(PHONE_COLOR.accent);
+let spinTarget = 0, spin = 0;
+let lastDraw = { s: -1, b: -1, c: -1 };
+
+function resize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.fov = w < 820 ? 34 : 30;
+  camera.updateProjectionMatrix();
+  buildKeys();
+}
+window.addEventListener("resize", resize);
+
+function apply(now) {
+  const t = now * 0.001, f = cur.fold;
+  pivot.rotation.x = f * Math.PI;
+  inner.position.set(0, (H / 2) * f, -P * f);
+  rig.position.set(cur.px, cur.py + cur.lift + Math.sin(t * 1.1) * 0.025, cur.pz);
+  rig.rotation.set(cur.rx + drag.pitch + Math.sin(t * 0.7) * 0.018, cur.ry + spin + drag.yaw, cur.rz);
+  rig.scale.setScalar(cur.sc);
+  const onScale = applyBalance();
+  setBump(cur.bump);
+
+  if (Math.abs(cur.sweep - lastDraw.s) > 0.002 || Math.abs(cur.bezel - lastDraw.b) > 0.002 || Math.abs(cur.crease - lastDraw.c) > 0.002) {
+    drawInner(cur.sweep, cur.bezel, cur.crease);
+    lastDraw = { s: cur.sweep, b: cur.bezel, c: cur.crease };
+  }
+  const halfH = (H * (2 - f)) / 2 * cur.sc;
+  shadow.position.set(cur.px, cur.py - halfH - 0.18, 0);
+  const sk = cur.sc * (1.1 - 0.35 * cur.lift);
+  shadow.scale.set(sk, sk, sk);
+  shadow.material.opacity = cur.sh * (1 - cur.lift * 1.3) * cur.op * 2.2 * (1 - onScale);
+  canvas.style.opacity = cur.op;
+}
+
+let lastT = performance.now();
+/* ---------- 마우스로 끌어서 돌려보기 (맨 처음 화면 + 색상 섹션) ---------- */
+const drag = { on: false, x: 0, y: 0, yaw: 0, pitch: 0, vy: 0, vp: 0, flip: 0 };
+function inDragZone(y) {
+  const vh = window.innerHeight, hero = $("hero"), shop = $("shop");
+  const inHero = y < hero.offsetTop + hero.offsetHeight - vh * 0.6;
+  const inShop = y > shop.offsetTop - vh * 0.3 && y < shop.offsetTop + shop.offsetHeight - vh * 0.5;
+  return inHero || inShop;
+}
+// 마우스: 끌면 모든 방향으로 회전
+// 터치(휴대폰·태블릿): 좌우로 밀면 회전, 위아래로 밀면 그대로 스크롤, 두 번 탭하면 뒤집기
+const TOUCH_UI = !!(window.matchMedia && window.matchMedia("(hover: none)").matches);
+let lastDragEnd = -1e9, lastTap = 0;
+function hideHint() { const h = $("dragHint"); if (h) { h.style.transition = "opacity .4s"; h.style.opacity = 0; } }
+if (TOUCH_UI && $("dragHint")) $("dragHint").textContent = "↔ 좌우로 밀어서 돌려보세요 · 두 번 탭하면 뒤집기";
+window.addEventListener("pointerdown", e => {
+  if (e.pointerType === "mouse" && e.button !== 0) return;
+  if (e.target.closest("a, button, input, label, select, textarea, nav, .shop-panel, .modal")) return;
+  if (!inDragZone(window.scrollY)) return;
+  drag.on = true; drag.touch = e.pointerType !== "mouse";
+  drag.x = drag.sx = e.clientX; drag.y = drag.sy = e.clientY; drag.t0 = performance.now(); drag.vy = 0; drag.vp = 0;
+  if (!drag.touch) { document.body.classList.add("dragging"); e.preventDefault(); hideHint(); }
+});
+window.addEventListener("pointermove", e => {
+  if (!drag.on) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY;
+  drag.vy = dx * (drag.touch ? 5.4 / Math.max(320, window.innerWidth) : 0.012); drag.yaw += drag.vy;   // 터치: 화면 폭만큼 밀면 약 한 바퀴
+  if (!drag.touch) drag.pitch = Math.max(-1.25, Math.min(1.25, drag.pitch + dy * 0.008));
+  else if (Math.abs(e.clientX - drag.sx) > 24) hideHint();
+});
+const endDrag = e => {
+  if (!drag.on) return;
+  drag.on = false; lastDragEnd = performance.now(); drag.vy *= 0.3; document.body.classList.remove("dragging");
+  if (drag.touch && e && e.type === "pointerup" && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 12 && performance.now() - drag.t0 < 300) {
+    const now = performance.now();   // 두 번 탭 → 반 바퀴 뒤집기
+    if (now - lastTap < 350) { drag.flip += Math.PI; lastTap = 0; hideHint(); } else lastTap = now;
+  }
+};
+window.addEventListener("pointerup", endDrag); window.addEventListener("pointercancel", endDrag); window.addEventListener("blur", () => endDrag());
+function updateDrag(dt) {
+  const zone = inDragZone(window.scrollY);
+  document.body.classList.toggle("can-drag", zone);
+  if (Math.abs(drag.flip) > 0.001) { const st = drag.flip * (1 - Math.exp(-dt * 6)); drag.yaw += st; drag.flip -= st; }
+  if (drag.on) return;
+  const f = Math.exp(-dt * 3.2);                 // 손을 놓으면 관성으로 조금 더 돌다가 멈춤
+  drag.yaw += drag.vy; drag.vy *= f; drag.vp *= f;
+  if (!zone) {                                   // 구역을 벗어나면 원래 각도로 부드럽게 복귀
+    const TAU2 = Math.PI * 2;
+    drag.yaw = ((drag.yaw + Math.PI) % TAU2 + TAU2) % TAU2 - Math.PI;
+    const k = 1 - Math.exp(-dt * 3);
+    drag.yaw -= drag.yaw * k; drag.pitch -= drag.pitch * k; drag.vy = 0;
+  }
+}
+
+function loop(now) {
+  const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
+  updateDrag(dt);
+  if (lenis) lenis.raf(now);
+  const y = window.scrollY;
+  const tgt = sample(y);
+  const k = 1 - Math.exp(-dt * 5.5);  // 추가 감쇠: 움직임을 한 번 더 부드럽게
+  for (const key in tgt) cur[key] += (tgt[key] - cur[key]) * k;
+  spin += (spinTarget - spin) * (1 - Math.exp(-dt * 3));
+  lerpPhoneColors(1 - Math.exp(-dt * 6));
+  apply(now);
+  updateText(y);
+  if (cur.op > 0.01) renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+
+/* =====================================================================
+   6. 서버 통신 도우미
+   ===================================================================== */
+async function apiFetch(url, options = {}) {
+  const opt = { credentials: "same-origin", ...options, headers: { ...(options.headers || {}) } };
+  if (opt.body !== undefined) { opt.headers["Content-Type"] = "application/json"; opt.body = JSON.stringify(opt.body); }
+  let res;
+  try { res = await fetch(url, opt); }
+  catch { throw new Error("서버에 연결할 수 없어요. 서버가 실행 중인지 확인해 주세요."); }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) { const err = new Error(data.error || "요청을 처리하지 못했어요."); err.status = res.status; throw err; }
+  return data;
+}
+const scrollToEl = sel => {
+  const y = document.querySelector(sel).getBoundingClientRect().top + window.scrollY;
+  lenis ? lenis.scrollTo(y, { duration: 1.4 }) : window.scrollTo({ top: y, behavior: "smooth" });
+};
+
+/* =====================================================================
+   7. 색상·용량·가격 UI
+   ===================================================================== */
+let me = null;              // 로그인한 고객 정보 (없으면 null)
+let firstOrderDiscount = false;
+const DISCOUNT_RATE = 0.05;
+
+function buildSwatches() {
+  const swWrap = $("swatches"); swWrap.innerHTML = "";
+  COLORS.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.className = "sw"; b.style.background = c.hex; b.setAttribute("aria-label", c.name);
+    if (c.extra) b.innerHTML = '<span class="ltd">LTD</span>';
+    b.addEventListener("click", () => { sel.color = i; spinTarget += Math.PI * 2; refreshShop(); });
+    swWrap.appendChild(b);
+  });
+  document.querySelectorAll(".st").forEach((b, i) => {
+    if (!STORAGE[i]) return;
+    b.querySelector("b").textContent = STORAGE[i].name;
+    b.querySelector("span").textContent = won(STORAGE[i].price) + "부터";
+  });
+}
+document.querySelectorAll(".st").forEach(b => b.addEventListener("click", () => { sel.storage = +b.dataset.i; refreshShop(); }));
+
+function priceOf(ci, si) { return STORAGE[si].price + COLORS[ci].extra; }
+function quote() {
+  const unit = priceOf(sel.color, sel.storage);
+  const discount = me && firstOrderDiscount ? Math.round(unit * DISCOUNT_RATE / 10) * 10 : 0;
+  return { unit, discount, total: unit - discount };
+}
+function refreshShop() {
+  const c = COLORS[sel.color], s = STORAGE[sel.storage], p = priceOf(sel.color, sel.storage), qt = quote();
+  document.querySelectorAll(".sw").forEach((b, i) => b.classList.toggle("on", i === sel.color));
+  document.querySelectorAll(".st").forEach((b, i) => b.classList.toggle("on", i === sel.storage));
+  $("colorName").textContent = c.name;
+  $("price").textContent = won(p);
+  $("priceSub").textContent = `월 ${Math.round(p / 24).toLocaleString("ko-KR")}원 (24개월 무이자)`;
+  setPhoneColor(c);
+  $("ptable").innerHTML = COLORS.map((cc, i) =>
+    `<tr class="${i === sel.color ? "on" : ""}"><td><span class="dot" style="background:${cc.hex}"></span>${cc.name}</td>` +
+    STORAGE.map((_, si) => `<td>${won(priceOf(i, si))}</td>`).join("") + "</tr>").join("");
+  $("oDot").style.background = c.hex;
+  $("oName").textContent = `BK phone · ${c.name}`;
+  $("oSub").textContent = `${s.name} · 무료 배송${qt.discount ? " · 첫 구매 5% 할인" : ""}`;
+  $("oPrice").textContent = won(qt.total);
+}
+
+/* =====================================================================
+   8. 회원가입 · 로그인 (서버 데이터베이스에 저장)
+   ===================================================================== */
+function setErr(id, msg) {
+  const f = $(id).closest(".f");
+  f.classList.toggle("bad", !!msg);
+  f.querySelector(".msg").textContent = msg || "";
+  return !msg;
+}
+function showAuth(which) {   // "signup" | "login" | "done"
+  $("signupForm").style.display = which === "signup" ? "block" : "none";
+  $("loginForm").style.display = which === "login" ? "block" : "none";
+  $("signupDone").style.display = which === "done" ? "block" : "none";
+}
+document.querySelectorAll("[data-show]").forEach(a => a.addEventListener("click", () => showAuth(a.dataset.show)));
+
+function setMe(data, justSignedUp) {
+  me = data.customer; firstOrderDiscount = !!data.firstOrderDiscount;
+  if (me) {
+    $("welcome").textContent = justSignedUp ? `${me.name}님, 가입을 환영합니다!` : `${me.name}님, 반가워요!`;
+    $("welcomeSub").innerHTML = firstOrderDiscount
+      ? "첫 구매 5% 할인이 적용돼요.<br>아래에서 바로 주문할 수 있습니다."
+      : "아래에서 주문하고 주문 내역을 확인할 수 있어요.";
+    showAuth("done");
+    loadMyOrders();
+  } else {
+    showAuth("signup");
+    $("myOrders").style.display = "none";
+  }
+  refreshShop();
+}
+
+$("signupForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  $("signupErr").textContent = "";
+  const name = $("name").value.trim(), email = $("email").value.trim();
+  const phone = $("phone").value.replace(/[^0-9]/g, ""), pw = $("pw").value, pw2 = $("pw2").value;
+  let ok = true;
+  ok = setErr("name", name ? "" : "이름을 입력해 주세요.") && ok;
+  ok = setErr("email", /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? "" : "올바른 이메일 형식이 아니에요.") && ok;
+  ok = setErr("phone", /^01[0-9]{8,9}$/.test(phone) ? "" : "휴대폰 번호를 확인해 주세요.") && ok;
+  ok = setErr("pw", (pw.length >= 8 && /[A-Za-z]/.test(pw) && /[0-9]/.test(pw)) ? "" : "영문+숫자 포함 8자 이상이어야 해요.") && ok;
+  ok = setErr("pw2", pw && pw === pw2 ? "" : "비밀번호가 일치하지 않아요.") && ok;
+  const am = $("agreeMsg").querySelector(".msg");
+  am.textContent = $("agree").checked ? "" : "필수 약관에 동의해 주세요.";
+  ok = $("agree").checked && ok;
+  if (!ok) return;
+
+  const btn = e.submitter || $("signupForm").querySelector("button[type=submit]");
+  btn.disabled = true;
+  try {
+    const data = await apiFetch("/api/signup", { method: "POST", body: { name, email, phone, password: pw, agree: true, marketing: $("marketing").checked } });
+    $("signupForm").reset();
+    setMe(data, true);
+    toast("회원가입이 완료되었어요 🎉");
+  } catch (err) {
+    $("signupErr").textContent = err.message;
+    if (err.status === 409) { $("lemail").value = email; }
+  } finally { btn.disabled = false; }
+});
+
+$("loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  $("loginErr").textContent = "";
+  const email = $("lemail").value.trim(), password = $("lpw").value;
+  if (!email || !password) { $("loginErr").textContent = "이메일과 비밀번호를 입력해 주세요."; return; }
+  const btn = e.submitter || $("loginForm").querySelector("button[type=submit]");
+  btn.disabled = true;
+  try {
+    const data = await apiFetch("/api/login", { method: "POST", body: { email, password } });
+    $("loginForm").reset();
+    setMe(data, false);
+    toast(`${data.customer.name}님, 로그인되었어요`);
+  } catch (err) { $("loginErr").textContent = err.message; }
+  finally { btn.disabled = false; }
+});
+
+$("logoutBtn").addEventListener("click", async () => {
+  try { await apiFetch("/api/logout", { method: "POST", body: {} }); } catch {}
+  setMe({ customer: null });
+  toast("로그아웃되었어요");
+});
+
+/* =====================================================================
+   9. 주문 (서버 데이터베이스에 저장 → 관리자 페이지에서 확인)
+   ===================================================================== */
+const modal = $("orderModal");
+function openOrder() {
+  const c = COLORS[sel.color], s = STORAGE[sel.storage], qt = quote();
+  $("sumName").textContent = `BK phone · ${c.name} · ${s.name}`;
+  $("sumUnit").textContent = won(qt.unit);
+  $("sumDiscRow").style.display = qt.discount ? "flex" : "none";
+  $("sumDisc").textContent = "−" + won(qt.discount);
+  $("sumTotal").textContent = won(qt.total);
+  if (!$("oRecipient").value) $("oRecipient").value = me.name;
+  if (!$("oPhone").value) $("oPhone").value = me.phone;
+  $("orderForm").style.display = "block"; $("orderDone").style.display = "none"; $("orderErr").textContent = "";
+  modal.classList.add("open");
+  if (lenis) lenis.stop();
+  setTimeout(() => $("oZip").focus(), 50);
+}
+function closeOrder() { modal.classList.remove("open"); if (lenis) lenis.start(); }
+modal.addEventListener("click", e => { if (e.target === modal || e.target.closest("[data-close]")) closeOrder(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && modal.classList.contains("open")) closeOrder(); });
+
+$("orderBtn").addEventListener("click", () => {
+  if (!me) { toast("먼저 회원가입 또는 로그인을 해 주세요"); scrollToEl("#signup"); return; }
+  openOrder();
+});
+
+$("orderForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  $("orderErr").textContent = "";
+  const recipient = $("oRecipient").value.trim(), recipientPhone = $("oPhone").value.replace(/[^0-9]/g, "");
+  const zipcode = $("oZip").value.replace(/[^0-9]/g, ""), address = $("oAddr").value.trim(), memo = $("oMemo").value.trim();
+  let ok = true;
+  ok = setErr("oRecipient", recipient ? "" : "받는 분 이름을 입력해 주세요.") && ok;
+  ok = setErr("oPhone", /^01[0-9]{8,9}$/.test(recipientPhone) ? "" : "연락처를 확인해 주세요.") && ok;
+  ok = setErr("oZip", zipcode.length === 5 ? "" : "우편번호 5자리를 입력해 주세요.") && ok;
+  ok = setErr("oAddr", address.length >= 5 ? "" : "주소를 입력해 주세요.") && ok;
+  if (!ok) return;
+
+  const btn = $("orderSubmit"); btn.disabled = true; btn.textContent = "접수 중...";
+  try {
+    const { order } = await apiFetch("/api/orders", { method: "POST", body: {
+      colorId: COLORS[sel.color].id, storageId: STORAGE[sel.storage].id,
+      recipient, recipientPhone, zipcode, address, memo } });
+    $("doneNo").textContent = order.order_no;
+    $("doneTotal").textContent = won(order.total);
+    $("orderForm").style.display = "none"; $("orderDone").style.display = "block";
+    firstOrderDiscount = false;
+    refreshShop(); loadMyOrders();
+  } catch (err) {
+    $("orderErr").textContent = err.message;
+    if (err.status === 401) { closeOrder(); setMe({ customer: null }); scrollToEl("#signup"); }
+  } finally { btn.disabled = false; btn.textContent = "주문 접수하기"; }
+});
+
+async function loadMyOrders() {
+  try {
+    const { orders } = await apiFetch("/api/orders/mine");
+    const box = $("myOrders");
+    if (!orders.length) { box.style.display = "none"; return; }
+    $("myOrderList").innerHTML = orders.map(o =>
+      `<div class="mo"><div>${esc(o.product || "BK phone")} · ${esc(o.color_name)} · ${esc(o.storage)}<small>${esc(o.order_no)} · ${esc(o.created_at)}</small></div>` +
+      `<div style="text-align:right">${won(o.total)}<br><span class="badge">${esc(o.status)}</span></div></div>`).join("");
+    box.style.display = "block";
+  } catch {}
+}
+const esc = s => String(s).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+
+let toastTimer;
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+/* 섹션 등장 효과 */
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: 0.15 });
+document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+
+/* =====================================================================
+   10. 시작
+   ===================================================================== */
+drawInner(0, 0, 0); drawCover();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => {
+  lastDraw = { s: -1, b: -1, c: -1 }; drawCover();
+  drawOuter();
+});
+resize();
+Object.assign(cur, sample(window.scrollY));
+buildSwatches();
+refreshShop();
+requestAnimationFrame(loop);
+
+// 서버에서 상품 정보와 로그인 상태 불러오기
+(async () => {
+  try {
+    const cat = await apiFetch("/api/catalog");
+    if (cat.colors && cat.storage) { COLORS = cat.colors; STORAGE = cat.storage; buildSwatches(); refreshShop(); }
+  } catch {}
+  try { setMe(await apiFetch("/api/me")); } catch {}
+})();
+</script>
+</body>
+</html>

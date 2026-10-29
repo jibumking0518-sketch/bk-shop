@@ -1,0 +1,16 @@
+{
+  "name": "bk-phone-shop",
+  "version": "2.0.0",
+  "description": "BumBum Company · BK phone 쇼핑몰 (Vercel + Neon Postgres)",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}

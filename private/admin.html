@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>주문 관리 · BumBum Company</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f5f5f7;--card:#fff;--fg:#0b0b0f;--muted:#6e6e73;--line:#e6e6eb;--accent:#2f5bff;--new:#fff7e6}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--fg);font-family:'Inter','Noto Sans KR',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  header{background:#fff;border-bottom:1px solid var(--line);padding:16px 4vw;display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
+  header h1{font-size:17px;font-weight:700;letter-spacing:-.02em}
+  header h1 span{color:var(--muted);font-weight:500;margin-left:8px;font-size:13px}
+  .live{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
+  .live i{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.15)}
+  main{padding:28px 4vw 60px;max-width:1400px;margin:0 auto}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px}
+  .stat .k{font-size:13px;color:var(--muted)}
+  .stat .v{font-size:28px;font-weight:700;letter-spacing:-.03em;margin-top:6px;font-variant-numeric:tabular-nums}
+  .tabs{display:flex;gap:8px;margin-bottom:14px;align-items:center;flex-wrap:wrap}
+  .tab{border:1px solid var(--line);background:#fff;padding:9px 16px;border-radius:999px;cursor:pointer;font-size:14px;font-family:inherit}
+  .tab.on{background:var(--fg);color:#fff;border-color:var(--fg)}
+  .spacer{flex:1}
+  select.filter,input.search{border:1px solid var(--line);border-radius:999px;padding:9px 14px;font-size:14px;font-family:inherit;background:#fff}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:auto}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:980px}
+  th{text-align:left;font-weight:500;color:var(--muted);padding:12px 14px;border-bottom:1px solid var(--line);background:#fafafa;position:sticky;top:0;white-space:nowrap}
+  td{padding:13px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  tr.isnew td{background:var(--new)}
+  td small{display:block;color:var(--muted);margin-top:2px}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;border:1px solid rgba(0,0,0,.15);vertical-align:-1px}
+  select.status{border:1px solid var(--line);border-radius:10px;padding:6px 8px;font-family:inherit;font-size:13px;background:#fff;cursor:pointer}
+  .prod{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:#eef1ff;color:#2f5bff;margin-bottom:6px}
+  .empty{padding:60px 20px;text-align:center;color:var(--muted)}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--fg);color:#fff;padding:12px 20px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none}
+  .toast.show{opacity:1}
+  @media (max-width:800px){ .stats{grid-template-columns:1fr 1fr} }
+</style>
+</head>
+<body>
+<header>
+  <h1>BK phone 주문 관리<span>BumBum Company</span></h1>
+  <div class="live"><i></i><span id="updated">불러오는 중…</span></div>
+</header>
+
+<main>
+  <div class="stats">
+    <div class="stat"><div class="k">새 주문 (주문접수)</div><div class="v" id="sNew">-</div></div>
+    <div class="stat"><div class="k">전체 주문</div><div class="v" id="sOrders">-</div></div>
+    <div class="stat"><div class="k">매출 (취소 제외)</div><div class="v" id="sRevenue">-</div></div>
+    <div class="stat"><div class="k">가입 고객</div><div class="v" id="sCustomers">-</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="orders">주문</button>
+    <button class="tab" data-tab="customers">고객</button>
+    <div class="spacer"></div>
+    <select class="filter" id="statusFilter"><option value="">모든 상태</option></select>
+    <input class="search" id="search" placeholder="이름·주문번호·이메일 검색">
+  </div>
+
+  <div class="panel" id="ordersPanel"></div>
+  <div class="panel" id="customersPanel" style="display:none"></div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const won = n => "₩" + Number(n).toLocaleString("ko-KR");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmtPhone = p => String(p).replace(/^(\d{3})(\d{3,4})(\d{4})$/, "$1-$2-$3");
+const COLOR_HEX = { black: "#141518", cloud: "#ecebe6", graphite: "#3b3d42", sage: "#b8c3ae", blush: "#ebd3cf", ice: "#c9d9e8",
+  "g-white": "#f1f1ee", "g-black": "#2a2b2f", "g-silver": "#c7cacf", "g-sand": "#ddd0bb",
+  "b-caramel": "#9a5f43", "b-black": "#26262a", "b-sage": "#7f8f74", "b-rose": "#c98c88",
+  "p-silver": "#d9dde3", "p-rose": "#e3b7a0", "p-onyx": "#3a3b41", "p-pearl": "#f4f2ee" };
+
+let orders = [], customers = [], statuses = [], tab = "orders";
+let knownIds = null;   // 처음 불러온 뒤 새로 들어온 주문을 표시하기 위함
+const freshIds = new Set();
+
+async function get(url) {
+  const r = await fetch(url, { credentials: "same-origin" });
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || r.status);
+  return r.json();
+}
+
+async function load() {
+  try {
+    const [st, od, cu] = await Promise.all([get("/api/admin/stats"), get("/api/admin/orders"), get("/api/admin/customers")]);
+    $("sNew").textContent = st.new_orders; $("sOrders").textContent = st.orders;
+    $("sRevenue").textContent = won(st.revenue); $("sCustomers").textContent = st.customers;
+    orders = od.orders; customers = cu.customers;
+    if (!statuses.length) {
+      statuses = od.statuses;
+      $("statusFilter").insertAdjacentHTML("beforeend", statuses.map(s => `<option>${esc(s)}</option>`).join(""));
+    }
+    const ids = new Set(orders.map(o => o.id));
+    if (knownIds) {
+      const added = orders.filter(o => !knownIds.has(o.id));
+      if (added.length) {
+        added.forEach(o => freshIds.add(o.id));
+        toast(`🛒 새 주문 ${added.length}건이 들어왔어요`);
+        document.title = `(${added.length}) 새 주문 · BumBum`;
+      }
+    }
+    knownIds = ids;
+    $("updated").textContent = "자동 새로고침 · " + new Date().toLocaleTimeString("ko-KR");
+    render();
+  } catch (e) {
+    $("updated").textContent = "불러오기 실패: " + e.message;
+  }
+}
+
+function matches(text) {
+  const q = $("search").value.trim().toLowerCase();
+  return !q || text.toLowerCase().includes(q);
+}
+
+function render() {
+  const sf = $("statusFilter").value;
+  const list = orders.filter(o => (!sf || o.status === sf) &&
+    matches([o.order_no, o.product, o.color_name, o.customer_name, o.customer_email, o.recipient, o.address].join(" ")));
+  $("ordersPanel").innerHTML = list.length ? `
+    <table>
+      <thead><tr><th>주문번호 / 일시</th><th>주문자</th><th>상품</th><th class="num">금액</th><th>받는 분 / 배송지</th><th>요청사항</th><th>상태</th></tr></thead>
+      <tbody>${list.map(o => `
+        <tr class="${freshIds.has(o.id) ? "isnew" : ""}">
+          <td><b>${esc(o.order_no)}</b><small>${esc(o.created_at)}</small></td>
+          <td>${esc(o.customer_name)}<small>${esc(o.customer_email)}</small><small>${esc(fmtPhone(o.customer_phone))}</small></td>
+          <td><span class="prod">${esc(o.product || "BK phone")}</span><br><span class="dot" style="background:${COLOR_HEX[o.color_id] || "#ccc"}"></span>${esc(o.color_name)}<small>${esc(o.storage)}</small></td>
+          <td class="num">${won(o.total)}${o.discount ? `<small>할인 −${won(o.discount)}</small>` : ""}</td>
+          <td>${esc(o.recipient)} · ${esc(fmtPhone(o.recipient_phone))}<small>(${esc(o.zipcode)}) ${esc(o.address)}</small></td>
+          <td>${esc(o.memo) || "<small>-</small>"}</td>
+          <td><select class="status" data-id="${o.id}">${statuses.map(s => `<option ${s === o.status ? "selected" : ""}>${esc(s)}</option>`).join("")}</select></td>
+        </tr>`).join("")}
+      </tbody>
+    </table>` : `<div class="empty">${orders.length ? "조건에 맞는 주문이 없어요." : "아직 들어온 주문이 없어요."}</div>`;
+
+  const cl = customers.filter(c => matches([c.name, c.email, c.phone].join(" ")));
+  $("customersPanel").innerHTML = cl.length ? `
+    <table>
+      <thead><tr><th>#</th><th>이름</th><th>이메일</th><th>휴대폰</th><th>마케팅 수신</th><th class="num">주문 수</th><th>가입일</th></tr></thead>
+      <tbody>${cl.map(c => `
+        <tr><td>${c.id}</td><td>${esc(c.name)}</td><td>${esc(c.email)}</td><td>${esc(fmtPhone(c.phone))}</td>
+        <td>${c.marketing ? "동의" : "-"}</td><td class="num">${c.order_count}</td><td>${esc(c.created_at)}</td></tr>`).join("")}
+      </tbody>
+    </table>` : `<div class="empty">아직 가입한 고객이 없어요.</div>`;
+}
+
+// 주문 상태 변경
+$("ordersPanel").addEventListener("change", async e => {
+  const s = e.target.closest("select.status"); if (!s) return;
+  try {
+    const r = await fetch(`/api/admin/orders/${s.dataset.id}`, {
+      method: "PATCH", credentials: "same-origin",
+      headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: s.value })
+    });
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || "실패");
+    freshIds.delete(Number(s.dataset.id));
+    toast("주문 상태를 '" + s.value + "'(으)로 바꿨어요");
+    load();
+  } catch (err) { toast("변경 실패: " + err.message); load(); }
+});
+
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+  tab = t.dataset.tab;
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === t));
+  $("ordersPanel").style.display = tab === "orders" ? "block" : "none";
+  $("customersPanel").style.display = tab === "customers" ? "block" : "none";
+  $("statusFilter").style.display = tab === "orders" ? "" : "none";
+}));
+$("statusFilter").addEventListener("change", render);
+$("search").addEventListener("input", render);
+window.addEventListener("focus", () => { document.title = "주문 관리 · BumBum Company"; });
+
+let tt;
+function toast(m) { const t = $("toast"); t.textContent = m; t.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("show"), 3000); }
+
+load();
+setInterval(load, 15000);   // 15초마다 새 주문 확인
+</script>
+</body>
+</html>
